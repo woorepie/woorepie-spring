@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/sms/**",
                                 "/agent/create",
                                 "/agent/login",
+                                "/agent/check-email",
                                 "/s3-presigned-url/customer",
                                 "/s3-presigned-url/agent"
                         ).permitAll()

@@ -94,18 +94,6 @@ public class CustomerController {
         return ApiResponseUtil.success(getCustomerTradeResponseList, request);
     }
 
-    // 로그인 상태 확인 API
-    @GetMapping("/status")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> checkAuthStatus(@AuthenticationPrincipal SessionCustomer session, HttpServletRequest request) {
-
-        Map<String, Object> result = customerService.getAuthStatus(session);
-        String message = (boolean) result.getOrDefault("authenticated", false) ? "Authenticated" : "Unauthenticated";
-
-        ApiResponse<Map<String, Object>> response = ApiResponse.of(HttpStatus.OK.value(), message, request.getRequestURI(), result);
-
-        return ResponseEntity.ok(response);
-    }
-
 }
 
 
