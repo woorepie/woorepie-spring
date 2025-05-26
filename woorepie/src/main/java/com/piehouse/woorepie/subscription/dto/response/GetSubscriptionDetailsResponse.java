@@ -15,9 +15,9 @@ public class GetSubscriptionDetailsResponse {
 
     private Long estateId;
 
-    private String estateName;
-
     private Long agentId;
+
+    private String estateName;
 
     private String agentName;
 
@@ -32,6 +32,8 @@ public class GetSubscriptionDetailsResponse {
     private String estateCity;
 
     private String estateAddress;
+
+    private String estateDescription;
 
     private String estateLatitude;
 

@@ -27,6 +27,8 @@ public class GetEstateDetailsResponse {
 
     private String estateAddress;
 
+    private String estateDescription;
+
     private String estateLatitude;
 
     private String estateLongitude;
@@ -38,8 +40,6 @@ public class GetEstateDetailsResponse {
     private Integer tokenAmount;
 
     private Integer estateTokenPrice;
-
-    private String estateDescription;
 
     private BigDecimal dividendYield;
 
