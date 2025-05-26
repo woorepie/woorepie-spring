@@ -24,6 +24,7 @@ public class AgentController {
 
     private final AgentService agentService;
 
+    // 대행인 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Void>> loginAgent(@Valid @RequestBody LoginAgentRequest loginAgentRequest, HttpServletRequest request) {
         log.info("Login agent request");
@@ -31,6 +32,7 @@ public class AgentController {
         return ApiResponseUtil.success(null, request);
     }
 
+    // 대행인 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logoutAgent(HttpServletRequest request) {
         log.info("Logout agent request");
@@ -38,6 +40,15 @@ public class AgentController {
         return ApiResponseUtil.success(null, request);
     }
 
+    // 이메일 중복 확인
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Boolean>> checkAgentEmail(@RequestParam String agentEmail, HttpServletRequest request) {
+        log.info("check agent email request");
+        Boolean check = agentService.checkAgentEmail(agentEmail);
+        return ApiResponseUtil.success(check, request);
+    }
+
+    // 대행인 회원가입
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createAgent(@Valid @RequestBody CreateAgentRequest agentRequest, HttpServletRequest request) {
         log.info("Signing agent request");
@@ -47,13 +58,9 @@ public class AgentController {
 
     // 대행인 정보 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<GetAgentResponse>> getAgentInfo(
-            @AuthenticationPrincipal SessionAgent sessionAgent,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiResponse<GetAgentResponse>> getAgentInfo(@AuthenticationPrincipal SessionAgent sessionAgent, HttpServletRequest request) {
         GetAgentResponse response = agentService.getAgentInfo(sessionAgent.getAgentId());
         return ApiResponseUtil.of(HttpStatus.OK, "대행인 정보 조회 성공", response, request);
     }
-
 
 }
