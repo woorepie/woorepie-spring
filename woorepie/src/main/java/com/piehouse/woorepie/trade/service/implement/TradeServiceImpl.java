@@ -50,7 +50,6 @@ public class TradeServiceImpl implements TradeService {
     private final RedisTradeRepository redisOrderRepository;
     private final KafkaProducerService kafkaProducerService;
     private final NotificationService notificationService;
-    private final EstatePriceRepository estatePriceRepository;
     private final EstateRepository estateRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final StringRedisTemplate redisTemplate;
@@ -254,13 +253,17 @@ public class TradeServiceImpl implements TradeService {
     @Override
     @Transactional
     public void createSubscription(CreateSubscriptionTradeRequest request, Long customerId) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         Long estateId = request.getEstateId();
         int requestAmount = request.getSubAmount();
         LocalDateTime now = LocalDateTime.now();
 
         log.info("[청약 신청 시작] customerId: {}, estateId: {}, 신청수량: {}", customerId, estateId, requestAmount);
 
-        // ✅ 1. PostgreSQL 조회해서 청약 기간 검증
+        // 1. PostgreSQL 조회해서 청약 기간 검증
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
         LocalDateTime subStart = estate.getSubStartDate();
@@ -269,12 +272,12 @@ public class TradeServiceImpl implements TradeService {
             throw new CustomException(ErrorCode.SUBSCRIPTION_PERIOD_INVALID);
         }
 
-        // ✅ 2. Redis에서 1토큰당 가격 조회
+        // Redis에서 1토큰당 가격 조회
         RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
         int tokenPrice = redisPrice.getEstateTokenPrice();
         int subscriptionCost = requestAmount * tokenPrice;
 
-        // ✅ 3. Redis에서 고객의 기존 매수 요청 금액 조회
+        // Redis에서 고객의 기존 매수 요청 금액 조회
         Set<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
         int cumulativeBuyCost = orders == null ? 0 :
                 orders.stream()
@@ -282,10 +285,7 @@ public class TradeServiceImpl implements TradeService {
                         .mapToInt(o -> o.getTradeTokenAmount() * o.getTokenPrice())
                         .sum();
 
-        // ✅ 4. PostgreSQL: 고객 계좌 조회
-        Account account = accountRepository.findByCustomer_CustomerIdAndEstate_EstateId(customerId, estateId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NON_EXIST));
-        int userBalance = account.getTotalAccountAmount();
+        int userBalance = customer.getAccountBalance();
 
         log.info("[청약 검증] customerId: {}, 기존매수금액: {}, 청약금액: {}, 총합: {}, 잔액: {}",
                 customerId, cumulativeBuyCost, subscriptionCost, cumulativeBuyCost + subscriptionCost, userBalance);
@@ -294,7 +294,7 @@ public class TradeServiceImpl implements TradeService {
             throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
         }
 
-        // ✅ 5. Kafka로 청약 요청 전송
+        // Kafka로 청약 요청 전송
         kafkaProducerService.sendSubscriptionRequest(
                 SubscriptionRequestEvent.builder()
                         .customerId(customerId)
@@ -303,51 +303,6 @@ public class TradeServiceImpl implements TradeService {
                         .subscribeDate(now)
                         .build()
         );
-    }
-
-
-
-
-    // 청약 신청 처리 로직
-    @Transactional
-    public void processSubscription(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
-        // 1. Redis 트랜잭션 시작
-        String redisKey = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
-        Long newRemaining = redisTemplate.opsForValue().decrement(redisKey, requestedAmount);
-
-        if (newRemaining == null || newRemaining < 0) {
-            redisTemplate.opsForValue().increment(redisKey, requestedAmount);
-            throw new CustomException(ErrorCode.TOKEN_INSUFFICIENT);
-        }
-
-        try {
-            // 2. PostgreSQL 트랜잭션 시작 (내부)
-            executeInTransaction(() -> {
-                Estate estate = estateRepository.findById(estateId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
-
-                Customer customer = customerRepository.findById(customerId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-                // 청약 저장
-                Subscription subscription = Subscription.builder()
-                        .estate(estate) // 실제 엔티티 주입
-                        .customer(customer) // 실제 엔티티 주입
-                        .subTokenAmount(requestedAmount)
-                        .build(); // subDate는 @CreationTimestamp로 자동 처리
-
-                subscriptionRepository.save(subscription);
-
-                // 고객 계좌 업데이트
-                int totalPrice = requestedAmount * tokenPrice;
-                customer.decreaseBalance(totalPrice); // 보유한 계좌에서 감소
-                customerRepository.save(customer);
-            });
-        } catch (Exception e) {
-            // PostgreSQL 트랜잭션 실패 → Redis 롤백
-            redisTemplate.opsForValue().increment(redisKey, requestedAmount);
-            throw e;
-        }
     }
 
     private void executeInTransaction(Runnable action) {
