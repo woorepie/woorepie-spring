@@ -81,6 +81,7 @@ public class EstateServiceImpl implements EstateService {
                 .estateState(estate.getEstateState())
                 .estateCity(estate.getEstateCity())
                 .estateAddress(estate.getEstateAddress())
+                .estateDescription(estate.getEstateDescription())
                 .estateLatitude(estate.getEstateLatitude())
                 .estateLongitude(estate.getEstateLongitude())
                 .estateImageUrl(estate.getEstateImageUrl())

@@ -35,14 +35,14 @@ public class SubscriptionController {
     }
 
     // 청약중인 매물 리스트 조회
-    @GetMapping("/list")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<GetSubscriptionSimpleResponse>>> getAllSubscriptionEstates(HttpServletRequest request) {
         List<GetSubscriptionSimpleResponse> responseList = subscriptionService.getActiveSubscriptions();
         return ApiResponseUtil.success(responseList, request);
     }
 
     // 청약 매물 상세 조회
-    @GetMapping
+    @GetMapping(params = "estateId")
     public ResponseEntity<ApiResponse<GetSubscriptionDetailsResponse>> getSubscriptionDetails(@RequestParam Long estateId, HttpServletRequest request) {
         GetSubscriptionDetailsResponse response = subscriptionService.getSubscriptionDetails(estateId);
         return ApiResponseUtil.success(response, request);

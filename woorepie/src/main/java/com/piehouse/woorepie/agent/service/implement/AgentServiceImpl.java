@@ -81,6 +81,16 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
+    public Boolean checkAgentEmail(String agentEmail) {
+
+        if (agentRepository.existsByAgentEmail(agentEmail)) {
+            throw new CustomException(ErrorCode.ALREADY_REGISTERED_EMAIL);
+        }
+
+        return true;
+    }
+
+    @Override
     @Transactional
     public void createAgent(CreateAgentRequest agentRequest, HttpServletRequest request) {
         if (agentRepository.existsByAgentEmail(agentRequest.getAgentEmail()) ||

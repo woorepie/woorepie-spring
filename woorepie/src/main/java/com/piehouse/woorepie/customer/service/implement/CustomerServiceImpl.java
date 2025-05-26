@@ -13,11 +13,11 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.customer.service.CustomerService;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
-import com.piehouse.woorepie.estate.service.implement.EstateRedisServiceImpl;
+import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.CustomerCreatedEvent;
-import com.piehouse.woorepie.global.kafka.service.impliment.KafkaProducerServiceImpl;
+import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
 import com.piehouse.woorepie.subscription.entity.Subscription;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
@@ -50,8 +50,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final TradeRepository tradeRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
-    private final EstateRedisServiceImpl estateRedisServiceImpl;
-    private final KafkaProducerServiceImpl kafkaProducerServiceImpl;
+    private final EstateRedisService estateRedisService;
+    private final KafkaProducerService kafkaProducerService;
     private final S3ServiceImpl s3ServiceImpl;
     private static final int ACCOUNT_NUMBER_LENGTH = 15;
 
@@ -145,7 +145,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customer);
 
         CustomerCreatedEvent event = CustomerCreatedEvent.fromCustomer(customer);
-        kafkaProducerServiceImpl.sendCustomerCreated(event);
+        kafkaProducerService.sendCustomerCreated(event);
 
     }
 
@@ -195,7 +195,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .distinct()
                 .toList();
 
-        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisServiceImpl.getMultipleRedisEstatePrice(estateIds);
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         //토큰 보유액 계산
         int totalAccountTokenPrice = accounts.stream()
@@ -229,7 +229,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .distinct()
                 .toList();
 
-        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisServiceImpl.getMultipleRedisEstatePrice(estateIds);
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         return accounts.stream()
                 .map(account -> {
@@ -261,7 +261,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .distinct()
                 .toList();
 
-        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisServiceImpl.getMultipleRedisEstatePrice(estateIds);
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         return subscriptions.stream()
                 .map(subscription -> {
@@ -296,7 +296,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .distinct()
                 .toList();
 
-        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisServiceImpl.getMultipleRedisEstatePrice(estateIds);
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         // Seller 거래
         List<GetCustomerTradeResponse> sellerTradeResponses  = sellerTrades.stream()
@@ -336,20 +336,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .toList();
 
         return tradeResponses;
-
-    }
-
-    public Map<String, Object> getAuthStatus(SessionCustomer session) {
-        Map<String, Object> result = new HashMap<>();
-
-        if (session != null) {
-            result.put("authenticated", true);
-            result.put("user", session);
-        } else {
-            result.put("authenticated", false);
-        }
-
-        return result;
 
     }
 

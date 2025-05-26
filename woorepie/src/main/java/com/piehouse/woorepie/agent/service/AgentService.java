@@ -11,6 +11,8 @@ public interface AgentService {
 
     void logoutAgent(HttpServletRequest request);
 
+    Boolean checkAgentEmail(String agentEmail);
+
     void createAgent(CreateAgentRequest agentRequest, HttpServletRequest request);
 
     GetAgentResponse getAgentInfo(Long agentId);

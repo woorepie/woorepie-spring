@@ -33,8 +33,11 @@ public class SecurityConfig {
                                 "/sms/**",
                                 "/agent/create",
                                 "/agent/login",
+                                "/agent/check-email",
                                 "/s3-presigned-url/customer",
-                                "/s3-presigned-url/agent"
+                                "/s3-presigned-url/agent",
+                                "/estate",
+                                "subscription"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"

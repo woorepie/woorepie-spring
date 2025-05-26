@@ -48,10 +48,10 @@ public class Agent {
     @Column(nullable = false, length = 30)
     private String businessName;
 
-    @Column(nullable = false, length = 20, unique = true)
+    @Column(nullable = false, length = 20)
     private String businessNumber;
 
-    @Column(nullable = false, length = 20, unique = true)
+    @Column(nullable = false, length = 20)
     private String businessPhoneNumber;
 
     @Column(nullable = false, length = 100)
