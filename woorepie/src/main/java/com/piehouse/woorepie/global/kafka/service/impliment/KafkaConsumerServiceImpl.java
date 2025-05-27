@@ -114,7 +114,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
     // 배당금 승인 로직
     @Override
-    @KafkaListener(topics = "dividen.accept")
+    @KafkaListener(topics = "dividend.accept")
     @Transactional
     public void handleDividendApproval(DividendAcceptMessage message) {
 
