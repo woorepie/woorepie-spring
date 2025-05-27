@@ -27,6 +27,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/health",
                                 "/customer/login",
                                 "/customer/create",
                                 "/customer/check-email",
@@ -37,7 +38,7 @@ public class SecurityConfig {
                                 "/s3-presigned-url/customer",
                                 "/s3-presigned-url/agent",
                                 "/estate",
-                                "subscription"
+                                "/subscription"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"
