@@ -59,9 +59,23 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @Override
     @KafkaListener(topics = "subscription.request")
     public void consumeSubscriptionRequest(SubscriptionRequestEvent event) {
-        log.info("청약 요청 수신: customerId={}, estateId={}, amount={}, subscribeDate={}",
+        log.info("[Kafka] 청약 요청 수신: customerId={}, estateId={}, amount={}, subscribeDate={}",
                 event.getCustomerId(), event.getEstateId(), event.getAmount(), event.getSubscribeDate());
         tradeService.processSubscriptionRequest(event.getEstateId(), event.getCustomerId(), event.getAmount(), event.getTokenPrice());
+    }
+
+    @Override
+    @KafkaListener(topics = "subscription.success")
+    public void consumeSubscriptionSuccess(SubscriptionResultEvent event) {
+        log.info("[Kafka] 청약 결과 - 모집 완료 수신 : estateId={}", event.getEstateId());
+        // 청약 모집 성공 서비스 로직 추후 추가 예정
+    }
+
+    @Override
+    @KafkaListener(topics = "subscription.failure")
+    public void consumeSubscriptionFailure(SubscriptionResultEvent event) {
+        log.info("[Kafka] 청약 결과 - 모집 실패 수신 : estateId={}", event.getEstateId());
+        // 청약 모집 실패 서비스 로직 추후 추가 예정
     }
 
     @Override
