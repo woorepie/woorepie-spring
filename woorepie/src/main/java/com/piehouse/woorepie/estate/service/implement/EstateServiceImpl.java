@@ -7,14 +7,13 @@ import com.piehouse.woorepie.estate.dto.response.GetEstatePriceResponse;
 import com.piehouse.woorepie.estate.dto.response.GetEstateSimpleResponse;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
-import com.piehouse.woorepie.estate.entity.SubState;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.estate.service.EstateService;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +34,7 @@ public class EstateServiceImpl implements EstateService {
     @Transactional(readOnly = true)
     public List<GetEstateSimpleResponse> getTradableEstates() {
 
-        List<Estate> estates = estateRepository.findBySubState(SubState.SUCCESS);
+        List<Estate> estates = estateRepository.findBySubState(EstateStatus.SUCCESS);
 
         List<Long> estateIds = estates.stream()
                 .map(Estate::getEstateId)

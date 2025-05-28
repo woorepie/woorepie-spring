@@ -5,7 +5,7 @@ import com.piehouse.woorepie.agent.repository.AgentRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
-import com.piehouse.woorepie.estate.entity.SubState;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.estate.service.implement.EstateRedisServiceImpl;
@@ -61,7 +61,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .appraisalReportUrl(s3serviceImpl.getPublicS3Url(request.getAppraisalReportUrlKey()))
                 .estateRegistrationDate(LocalDateTime.now())
                 .tokenAmount(request.getTokenAmount())
-                .subState(SubState.READY)
+                .estateStatus(EstateStatus.READY)
                 .build();
         estateRepository.save(estate);
 
@@ -81,7 +81,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public List<GetSubscriptionSimpleResponse> getActiveSubscriptions() {
 
         List<Estate> estates = estateRepository.findBySubStateIn(List.of(
-                SubState.READY, SubState.RUNNING, SubState.PENDING, SubState.FAILURE
+                EstateStatus.READY, EstateStatus.RUNNING, EstateStatus.PENDING, EstateStatus.FAILURE
         )); // 청약 중인 substate 필터링
 
         List<Long> estateIds = estates.stream()
@@ -109,7 +109,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             .estatePrice(price.getEstatePrice())
                             .estateTokenPrice(price.getEstateTokenPrice())
                             .dividendYield(price.getDividendYield())
-                            .subState(estate.getSubState())
+                            .estateStatus(estate.getEstateStatus())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -147,7 +147,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .subTokenAmount(subTokenAmount)
                 .estateTokenPrice(price.getEstateTokenPrice())
                 .dividendYield(price.getDividendYield())
-                .subState(estate.getSubState())
+                .estateStatus(estate.getEstateStatus())
                 .estateUseZone(estate.getEstateUseZone())
                 .totalEstateArea(estate.getTotalEstateArea())
                 .tradedEstateArea(estate.getTradedEstateArea())

@@ -6,6 +6,7 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
@@ -13,6 +14,7 @@ import com.piehouse.woorepie.global.kafka.dto.SubscriptionRequestEvent;
 import com.piehouse.woorepie.global.kafka.dto.TransactionCreatedEvent;
 import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
 import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
+import com.piehouse.woorepie.subscription.entity.Subscription;
 import com.piehouse.woorepie.trade.dto.request.*;
 import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.trade.dto.request.BuyEstateRequest;
@@ -25,9 +27,13 @@ import com.piehouse.woorepie.trade.repository.TradeRepository;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -312,7 +318,7 @@ public class TradeServiceImpl implements TradeService {
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
-        if (estate.getSubState() != SubState.RUNNING) {
+        if (estate.getEstateStatus() != EstateStatus.RUNNING) {
             throw new CustomException(ErrorCode.ESTATE_NOT_RUNNING);
         }
 

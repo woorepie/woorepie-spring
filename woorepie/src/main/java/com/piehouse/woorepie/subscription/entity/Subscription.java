@@ -2,6 +2,7 @@ package com.piehouse.woorepie.subscription.entity;
 
 import com.piehouse.woorepie.customer.entity.Customer;
 import com.piehouse.woorepie.estate.entity.Estate;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -44,4 +45,7 @@ public class Subscription {
     @Column(updatable = false)
     private LocalDateTime subDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sub_status", nullable = false)
+    private SubStatus subStatus = SubStatus.PENDING;
 }

@@ -1,7 +1,7 @@
 package com.piehouse.woorepie.subscription.scheduler;
 
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.entity.SubState;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class SubscriptionSyncScheduler {
     @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시 실행
     public void validateTokenConsistency() {
         // 1. 진행 중인(subState=RUNNING) 매물만 조회
-        List<Estate> runningEstates = estateRepository.findBySubState(SubState.RUNNING);
+        List<Estate> runningEstates = estateRepository.findBySubState(EstateStatus.RUNNING);
 
         runningEstates.forEach(estate -> {
             String redisKey = String.format("subscription:%s:remaining-tokens", estate.getEstateId());

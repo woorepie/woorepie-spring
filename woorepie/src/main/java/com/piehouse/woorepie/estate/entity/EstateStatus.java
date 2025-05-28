@@ -1,6 +1,6 @@
 package com.piehouse.woorepie.estate.entity;
 
-public enum SubState {
+public enum EstateStatus {
     READY, // 청약 등록 대기
     RUNNING, // 청약 중
     PENDING, // 청약 완료 (승인 대기)

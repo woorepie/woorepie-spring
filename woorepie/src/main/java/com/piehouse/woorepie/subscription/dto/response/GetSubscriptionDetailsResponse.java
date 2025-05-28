@@ -1,6 +1,6 @@
 package com.piehouse.woorepie.subscription.dto.response;
 
-import com.piehouse.woorepie.estate.entity.SubState;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class GetSubscriptionDetailsResponse {
 
     private Integer estateTokenPrice;
 
-    private SubState subState;
+    private EstateStatus estateStatus;
 
     private String estateUseZone;
 

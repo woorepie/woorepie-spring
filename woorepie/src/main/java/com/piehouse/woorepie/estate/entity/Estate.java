@@ -91,7 +91,7 @@ public class Estate {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SubState subState = SubState.READY;
+    private EstateStatus estateStatus = EstateStatus.READY;
 
     // 매물 정보 수정
     public Estate updateDescription(String newDescription) {
@@ -100,11 +100,11 @@ public class Estate {
     }
 
     public void updateSubStateToSuccess() {
-        this.subState = SubState.SUCCESS;
+        this.estateStatus = EstateStatus.SUCCESS;
     }
 
     public void updateSubStateToExit() {
-        this.subState = SubState.EXIT;
+        this.estateStatus = EstateStatus.EXIT;
     }
 
 }
