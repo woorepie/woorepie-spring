@@ -16,6 +16,7 @@ import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaConsumerService;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
+import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -32,6 +33,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
+    private final TradeService tradeService;
     private final TradeRedisService tradeRedisService;
     private final EstateRedisServiceImpl estateRedisServiceImpl;
     private final EstateRepository estateRepository;
@@ -59,7 +61,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     public void consumeSubscriptionRequest(SubscriptionRequestEvent event) {
         log.info("청약 요청 수신: customerId={}, estateId={}, amount={}, subscribeDate={}",
                 event.getCustomerId(), event.getEstateId(), event.getAmount(), event.getSubscribeDate());
-        // 토큰 체크 및 결과 처리)은 이후에 구현
+        tradeService.processSubscriptionRequest(event.getEstateId(), event.getCustomerId(), event.getAmount(), event.getTokenPrice());
     }
 
     @Override

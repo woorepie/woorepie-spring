@@ -13,7 +13,7 @@ public interface KafkaProducerService {
 
     void sendCustomerCreated(CustomerCreatedEvent event); // 회원가입 완료 이벤트
 
-    void sendSubscriptionRequest(SubscriptionRequestEvent event);
+    void sendSubscriptionRequest(SubscriptionRequestEvent event); // 청약 신청
 
 
 }

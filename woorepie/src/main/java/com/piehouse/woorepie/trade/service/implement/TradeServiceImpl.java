@@ -311,8 +311,9 @@ public class TradeServiceImpl implements TradeService {
     }
 
     // 청약 신청 처리 로직
+    @Override
     @Transactional
-    public void processSubscription(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
+    public void processSubscriptionRequest(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
         // 1. 매물 상태 확인 (RUNNING 상태만 허용)
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
@@ -320,6 +321,7 @@ public class TradeServiceImpl implements TradeService {
         if (estate.getEstateStatus() != EstateStatus.RUNNING) {
             throw new CustomException(ErrorCode.ESTATE_NOT_RUNNING);
         }
+
         // 2. 사용자 존재 확인
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -341,7 +343,7 @@ public class TradeServiceImpl implements TradeService {
                 .subStatus(SubStatus.PENDING)
                 .build();
         subscriptionRepository.save(subscription);
-        log.info("청약 성공 - estateId: {}, customerId: {}", estateId, customerId);
+        log.info("청약 요청 DB에 저장 성공 - estateId: {}, customerId: {}", estateId, customerId);
     }
 
 }
