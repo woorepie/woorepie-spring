@@ -59,6 +59,9 @@ public class Customer {
     @Column(length = 1000, nullable = false, unique = true)
     private String customerIdentificationUrl;
 
+    @Version
+    private Long version;
+
     // 계좌 잔액 감소 메서드 추가
     public void decreaseBalance(int amount) {
         if (this.accountBalance < amount) {

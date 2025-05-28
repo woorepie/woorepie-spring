@@ -6,7 +6,6 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
@@ -14,7 +13,6 @@ import com.piehouse.woorepie.global.kafka.dto.SubscriptionRequestEvent;
 import com.piehouse.woorepie.global.kafka.dto.TransactionCreatedEvent;
 import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
 import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
-import com.piehouse.woorepie.subscription.entity.Subscription;
 import com.piehouse.woorepie.trade.dto.request.*;
 import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.trade.dto.request.BuyEstateRequest;
@@ -305,9 +303,65 @@ public class TradeServiceImpl implements TradeService {
         );
     }
 
+    // 청약 신청 처리 로직
+    @Retryable(value = ObjectOptimisticLockingFailureException.class, maxAttempts = 3)
+    public void processSubscription(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
+        String redisKey = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
+
+        // 1. 매물 상태 확인 (RUNNING 상태만 허용)
+        Estate estate = estateRepository.findById(estateId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+
+        if (estate.getSubState() != SubState.RUNNING) {
+            throw new CustomException(ErrorCode.ESTATE_NOT_RUNNING);
+        }
+
+        // 2. Redis 토큰 선점
+        Long newRemaining = redisTemplate.opsForValue().decrement(redisKey, requestedAmount);
+        if (newRemaining == null || newRemaining < 0) {
+            redisTemplate.opsForValue().increment(redisKey, requestedAmount); // 롤백
+            throw new CustomException(ErrorCode.TOKEN_INSUFFICIENT);
+        }
+
+        try {
+            executeInTransaction(() -> {
+                Customer customer = customerRepository.findById(customerId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+                // 3. 고객 계좌 차감
+                int totalPrice = requestedAmount * tokenPrice;
+                int updatedRows = customerRepository.decreaseBalance(customerId, totalPrice);
+
+                if (updatedRows == 0) {
+                    throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
+                }
+
+                // 4. 청약 기록 저장
+                Subscription subscription = Subscription.builder()
+                        .estate(estate)
+                        .customer(customer)
+                        .subTokenAmount(requestedAmount)
+                        .subDate(LocalDateTime.now()) // 현재 시각 저장
+                        .build();
+                subscriptionRepository.save(subscription);
+                log.info("청약 성공 - estateId: {}, customerId: {}", estateId, customerId);
+            });
+        } catch (DataIntegrityViolationException e) {
+            // Unique 제약조건 위반 (중복 청약)
+            redisTemplate.opsForValue().increment(redisKey, requestedAmount); // Redis 롤백
+            log.error("중복 청약 시도 - estateId: {}, customerId: {}", estateId, customerId);
+            throw new CustomException(ErrorCode.DUPLICATE_SUBSCRIPTION);
+        } catch (Exception e) {
+            redisTemplate.opsForValue().increment(redisKey, requestedAmount); // Redis 롤백
+            log.error("청약 처리 실패 - estateId: {}, customerId: {}", estateId, customerId, e);
+            throw e;
+        }
+    }
+
     private void executeInTransaction(Runnable action) {
 
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         transactionTemplate.execute(status -> {
             action.run();
             return null;
