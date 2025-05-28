@@ -3,15 +3,12 @@ package com.piehouse.woorepie.subscription.service.implement;
 import com.piehouse.woorepie.agent.entity.Agent;
 import com.piehouse.woorepie.agent.repository.AgentRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
-import com.piehouse.woorepie.estate.entity.Dividend;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.entity.SubState;
-import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.estate.service.implement.EstateRedisServiceImpl;
-import com.piehouse.woorepie.estate.service.implement.EstateServiceImpl;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
@@ -23,8 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +33,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final EstatePriceRepository estatePriceRepository;
     private final AgentRepository agentRepository;
     private final EstateRedisServiceImpl  estateRedisServiceImpl;
-    private final DividendRepository dividendRepository;
     private final S3ServiceImpl s3serviceImpl;
 
     @Override
@@ -55,6 +49,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .estateAddress(request.getEstateAddress())
                 .estateLatitude(request.getEstateLatitude())
                 .estateLongitude(request.getEstateLongitude())
+                .totalEstateArea(request.getTotalEstateArea())
+                .tradedEstateArea(request.getTradeEstateArea())
+                .estateUseZone(request.getEstateUseZone())
                 .estateDescription(request.getEstateDescription())
                 .estateImageUrl(s3serviceImpl.getPublicS3Url(request.getEstateImageUrlKey()))
                 .subGuideUrl(s3serviceImpl.getPublicS3Url(request.getSubGuideUrlKey()))
@@ -64,6 +61,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .appraisalReportUrl(s3serviceImpl.getPublicS3Url(request.getAppraisalReportUrlKey()))
                 .estateRegistrationDate(LocalDateTime.now())
                 .tokenAmount(request.getTokenAmount())
+                .subState(SubState.READY)
                 .build();
         estateRepository.save(estate);
 
@@ -74,19 +72,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .estatePriceDate(LocalDateTime.now())
                 .build();
         estatePriceRepository.save(estatePrice);
-
-        //배당률 테이블도 함께 저장
-        BigDecimal dividendYield = new BigDecimal(request.getDividend())
-                .divide(new BigDecimal(estateRedisServiceImpl.getRedisEstatePrice(estate.getEstateId()).getEstateTokenPrice()), 4, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal(100));
-
-        Dividend dividend = Dividend.builder()
-                .estate(estate)
-                .dividend(request.getDividend())
-                .dividendYield(dividendYield)
-                .dividendDate(LocalDateTime.now())
-                .build();
-        dividendRepository.save(dividend);
 
     }
     

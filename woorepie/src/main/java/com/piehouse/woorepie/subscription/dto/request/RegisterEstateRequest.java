@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,6 +36,15 @@ public class RegisterEstateRequest {
     @NotBlank(message = "tokenAmount 필수입니다.")
     private Integer tokenAmount;
 
+    @NotBlank(message = "totalEstateArea 필수입니다.")
+    private BigDecimal totalEstateArea;
+
+    @NotBlank(message = "tradeEstateArea 필수입니다.")
+    private BigDecimal tradeEstateArea;
+
+    @NotBlank(message = "estateUseZone 필수입니다.")
+    private String estateUseZone;
+
     private String estateDescription;
 
     @NotBlank(message = "estateImageUrlKey 필수입니다.")
@@ -53,8 +64,5 @@ public class RegisterEstateRequest {
 
     @NotBlank(message = "appraisalReportUrlKey 필수입니다.")
     private String appraisalReportUrlKey;
-
-    @NotBlank(message = "dividend 필수입니다.")
-    private Integer dividend;
 
 }

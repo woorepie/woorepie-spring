@@ -90,15 +90,15 @@ public class EstateRedisServiceImpl implements EstateRedisService {
 
         EstatePrice latest = estatePriceRepository
                 .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+                .orElse(null);
 
         BigDecimal dividendYield = dividendRepository
                 .findTopByEstate_EstateIdOrderByDividendDateDesc(estateId)
                 .map(Dividend::getDividendYield)
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+                .orElse(null);
 
         int tokenCount = estate.getTokenAmount();
-        int estatePrice = latest.getEstatePrice();
+        int estatePrice = latest != null ? latest.getEstatePrice() : 0;
         int estateTokenPrice = tokenCount != 0 ? estatePrice / tokenCount : 0;
 
         // Redis 저장 객체 생성
@@ -106,7 +106,7 @@ public class EstateRedisServiceImpl implements EstateRedisService {
                 .estatePrice(estatePrice)
                 .estateTokenPrice(estateTokenPrice)
                 .tokenAmount(tokenCount)
-                .dividendYield(dividendYield)
+                .dividendYield(dividendYield != null ? dividendYield : BigDecimal.ZERO)
                 .build();
 
         // Redis 캐싱 후 반환
