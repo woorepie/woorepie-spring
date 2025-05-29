@@ -123,7 +123,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         });
 
         // 매물 상태 변경 → SUCCESS
-        estate.updateSubStateToSuccess();
+        estate.updateEstateStatusToSuccess();
         estateRepository.save(estate);
 
     }
@@ -188,7 +188,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
         // 2. 상태 EXIT 변경
-        estate.updateSubStateToExit();
+        estate.updateEstateStatusToExit();
         estateRepository.save(estate);
 
         // 3. 최근 시세 조회

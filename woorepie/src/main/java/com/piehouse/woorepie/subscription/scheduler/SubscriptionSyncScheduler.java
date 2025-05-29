@@ -23,7 +23,7 @@ public class SubscriptionSyncScheduler {
     @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시 실행
     public void validateTokenConsistency() {
         // 1. 진행 중인(subState=RUNNING) 매물만 조회
-        List<Estate> runningEstates = estateRepository.findBySubState(EstateStatus.RUNNING);
+        List<Estate> runningEstates = estateRepository.findByEstateStatus(EstateStatus.RUNNING);
 
         runningEstates.forEach(estate -> {
             String redisKey = String.format("subscription:%s:remaining-tokens", estate.getEstateId());

@@ -96,11 +96,11 @@ public class Estate {
         return this;
     }
 
-    public void updateSubStateToSuccess() {
+    public void updateEstateStatusToSuccess() {
         this.estateStatus = EstateStatus.SUCCESS;
     }
 
-    public void updateSubStateToExit() {
+    public void updateEstateStatusToExit() {
         this.estateStatus = EstateStatus.EXIT;
     }
 

@@ -34,7 +34,7 @@ public class EstateServiceImpl implements EstateService {
     @Transactional(readOnly = true)
     public List<GetEstateSimpleResponse> getTradableEstates() {
 
-        List<Estate> estates = estateRepository.findBySubState(EstateStatus.SUCCESS);
+        List<Estate> estates = estateRepository.findByEstateStatus(EstateStatus.SUCCESS);
 
         List<Long> estateIds = estates.stream()
                 .map(Estate::getEstateId)

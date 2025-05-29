@@ -92,7 +92,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional(readOnly = true)
     public List<GetSubscriptionSimpleResponse> getActiveSubscriptions() {
 
-        List<Estate> estates = estateRepository.findBySubStateIn(List.of(
+        List<Estate> estates = estateRepository.findByEstateStatusIn(List.of(
                 EstateStatus.READY, EstateStatus.RUNNING, EstateStatus.PENDING, EstateStatus.FAILURE
         )); // 청약 중인 substate 필터링
 
