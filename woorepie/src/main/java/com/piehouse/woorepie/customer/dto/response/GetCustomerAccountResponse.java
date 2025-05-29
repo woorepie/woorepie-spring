@@ -23,6 +23,6 @@ public class GetCustomerAccountResponse {
 
     private Integer estateTokenPrice;
 
-    private BigDecimal estatePrice;
+    private Integer estatePrice;
 
 }

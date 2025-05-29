@@ -2,6 +2,7 @@ package com.piehouse.woorepie.customer.service.implement;
 
 import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
+import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -118,6 +119,23 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return true;
+
+    }
+
+    @Override
+    public void modifyCustomerPassword(Long customerId, ModifyPassword passwordRequest) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(passwordRequest.getCurrentPassword(), customer.getCustomerPassword())) {
+            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(passwordRequest.getNewPassword());
+        customer.updatePassword(encodedNewPassword);
+
+        customerRepository.save(customer);
 
     }
 
@@ -242,7 +260,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .accountTokenAmount(account.getAccountTokenAmount())
                         .accountTokenPrice(price.getEstateTokenPrice() * account.getAccountTokenAmount())
                         .estateTokenPrice(price.getEstateTokenPrice())
-                        .estatePrice(price.getDividendYield())
+                        .estatePrice(price.getEstatePrice())
                         .build();
                 })
                 .toList();

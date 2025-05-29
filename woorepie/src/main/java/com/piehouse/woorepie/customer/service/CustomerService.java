@@ -1,6 +1,7 @@
 package com.piehouse.woorepie.customer.service;
 
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
+import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -17,6 +18,8 @@ public interface CustomerService {
     void customerLogout(HttpServletRequest request);
 
     Boolean checkCustomerEmail(String customerEmail);
+
+    void modifyCustomerPassword(Long customerId, ModifyPassword passwordRequest);
 
     void createCustomer(CreateCustomerRequest requestDto);
 

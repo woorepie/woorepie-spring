@@ -2,6 +2,7 @@ package com.piehouse.woorepie.customer.controller;
 
 import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
+import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -52,6 +53,16 @@ public class CustomerController {
         log.info("check customer email request");
         Boolean check = customerService.checkCustomerEmail(customerEmail);
         return ApiResponseUtil.success(check, request);
+    }
+
+    // 비밀번호 변경(로그인 상태)
+    @PostMapping("/modify/password")
+    public ResponseEntity<ApiResponse<Void>> login(@AuthenticationPrincipal SessionCustomer session,
+                                                   @Valid @RequestBody ModifyPassword requestDto,
+                                                   HttpServletRequest request) {
+        log.info("update customer password request");
+        customerService.modifyCustomerPassword(session.getCustomerId(), requestDto);
+        return ApiResponseUtil.success(null, request);
     }
 
     // 회원 가입
