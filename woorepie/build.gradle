@@ -58,6 +58,13 @@ dependencies {
     // 코드 변경 시 자동 재시작
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // Prometheus + Actuator 메트릭 수집
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // JSON 포맷 로그 (Fluent Bit 친화적)
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
     // TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
