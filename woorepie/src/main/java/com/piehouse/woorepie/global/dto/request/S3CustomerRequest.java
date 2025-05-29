@@ -15,4 +15,7 @@ public class S3CustomerRequest {
     @Email
     private String customerEmail;
 
+    @NotBlank
+    private String fileType;
+
 }
