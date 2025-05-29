@@ -58,9 +58,6 @@ public class Estate {
     @Column(length = 1000)
     private String estateImageUrl;
 
-    @Column(unique = true, length = 200)
-    private String tokenAddress;
-
     @Column(nullable = false, length = 1000)
     private String subGuideUrl;
 

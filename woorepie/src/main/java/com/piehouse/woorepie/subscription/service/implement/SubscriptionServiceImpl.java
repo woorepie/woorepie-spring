@@ -8,13 +8,19 @@ import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
+import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.estate.service.implement.EstateRedisServiceImpl;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
+import com.piehouse.woorepie.global.kafka.dto.SubscriptionAcceptEvent;
+import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
 import com.piehouse.woorepie.subscription.dto.request.RegisterEstateRequest;
 import com.piehouse.woorepie.subscription.dto.response.GetSubscriptionDetailsResponse;
 import com.piehouse.woorepie.subscription.dto.response.GetSubscriptionSimpleResponse;
+import com.piehouse.woorepie.subscription.entity.SubStatus;
+import com.piehouse.woorepie.subscription.entity.Subscription;
+import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import com.piehouse.woorepie.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +40,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final AgentRepository agentRepository;
     private final EstateRedisServiceImpl  estateRedisServiceImpl;
     private final S3ServiceImpl s3serviceImpl;
+    private final SubscriptionRepository subscriptionRepository;
+    private final KafkaProducerService kafkaProducerService;
+    private final EstateRedisService estateRedisService;
 
     @Override
     @Transactional
@@ -160,4 +169,94 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     }
 
+    @Override
+    @Transactional
+    public void updateSubscriptionStatus(Long estateId) {
+        // 1. 모집 성공 대상 estateId의 pending 청약 내역 모두 조회
+        List<Subscription> pendingSubs = subscriptionRepository
+                .findAllByEstate_EstateIdAndSubStatusOrderBySubDateAsc(estateId, SubStatus.PENDING);
+
+        // 2. 모집 가능 토큰 수량 확인
+        Estate estate = estateRepository.findById(estateId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+
+        int availableToken = estate.getTokenAmount();
+
+        int allocated = 0;
+        Subscription partialFailureRow = null; // 부분 성공자(일부 성공, 일부 실패)
+
+        for (Subscription sub : pendingSubs) {
+            int remain = availableToken - allocated;
+            int reqAmount = sub.getSubTokenAmount();
+
+            if (remain <= 0) {
+                // 전체 실패: 기존 row만 update
+                sub.changeStatus(SubStatus.FAILURE);
+                continue;
+            }
+
+            if (reqAmount <= remain) {
+                // 전체 성공: 기존 row만 update
+                sub.changeStatus(SubStatus.SUCCESS);
+                allocated += reqAmount;
+            } else {
+                // 부분 성공: (이 루프에서 단 1회만 발생)
+                sub.changeStatus(SubStatus.SUCCESS);
+                sub.changeSubTokenAmount(remain);
+                allocated += remain;
+
+                // 나머지 실패 부분은 새로 row 생성
+                partialFailureRow = Subscription.builder()
+                        .estate(sub.getEstate())
+                        .customer(sub.getCustomer())
+                        .subTokenAmount(reqAmount - remain)
+                        .subDate(sub.getSubDate())
+                        .subStatus(SubStatus.FAILURE)
+                        .build();
+            }
+        }
+
+        // 3. 부분 실패자가 있으면 실패한 row 저장
+        if (partialFailureRow != null) {
+            subscriptionRepository.save(partialFailureRow);
+        }
+
+        // 4. 일괄 저장 (변경된 엔티티를 DB에 update)
+        subscriptionRepository.saveAll(pendingSubs);
+
+        // 5. 성공자 Kafka accept 이벤트 전송
+        List<Subscription> successSubs = pendingSubs.stream()
+                .filter(sub -> sub.getSubStatus() == SubStatus.SUCCESS)
+                .toList();
+
+        sendKafkaAcceptEvent(successSubs, estateId);
+
+        // 6. 실패자 환불, 알림 등 후처리
+
+    }
+
+    // 성공자 Kafka accept 이벤트 전송
+    private void sendKafkaAcceptEvent(List<Subscription> successSubs, Long estateId) {
+        if (successSubs.isEmpty()) {
+            return; // 성공자가 없으면 이벤트 전송 생략
+        }
+
+        RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
+        int tokenPrice = redisPrice.getEstateTokenPrice();
+
+        List<SubscriptionAcceptEvent.CustomerInfo> customerList = successSubs.stream()
+                .map(sub -> new SubscriptionAcceptEvent.CustomerInfo(
+                        sub.getCustomer().getCustomerId(),
+                        sub.getSubTokenAmount()
+                ))
+                .toList();
+
+        SubscriptionAcceptEvent event = SubscriptionAcceptEvent.builder()
+                .estateId(estateId)
+                .tokenPrice(tokenPrice)
+                .customer(customerList)
+                .build();
+
+        kafkaProducerService.sendSubscriptionAccept(event);
+    }
 }

@@ -1,5 +1,6 @@
 package com.piehouse.woorepie.subscription.repository;
 
+import com.piehouse.woorepie.subscription.entity.SubStatus;
 import com.piehouse.woorepie.subscription.entity.Subscription;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
     @Query("SELECT COALESCE(SUM(s.subTokenAmount), 0) FROM Subscription s WHERE s.estate.estateId = :estateId")
     int sumSubTokenAmountByEstateId(@Param("estateId") Long estateId);
+
+    // 해당 매물의 특정 상태 청약 내역을 신청일 기준 오름차순 조회
+    List<Subscription> findAllByEstate_EstateIdAndSubStatusOrderBySubDateAsc(Long estateId, SubStatus subStatus);
 }

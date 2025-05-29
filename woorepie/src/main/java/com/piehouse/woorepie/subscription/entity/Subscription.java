@@ -48,4 +48,15 @@ public class Subscription {
     @Enumerated(EnumType.STRING)
     @Column(name = "sub_status", nullable = false)
     private SubStatus subStatus = SubStatus.PENDING;
+
+    // 상태 변경 메소드 추가
+    public void changeStatus(SubStatus newStatus) {
+        this.subStatus = newStatus;
+    }
+
+    // 토큰 수량 업데이트 메소드 추가
+    public void changeSubTokenAmount(int newAmount) {
+        this.subTokenAmount = newAmount;
+    }
+
 }
