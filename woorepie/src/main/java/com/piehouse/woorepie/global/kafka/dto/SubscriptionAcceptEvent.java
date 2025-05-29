@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 public class SubscriptionAcceptEvent {
     private Long estateId;
+    private Integer tokenPrice;
     private List<CustomerInfo> customer;
 
     @Getter
@@ -20,7 +21,6 @@ public class SubscriptionAcceptEvent {
     @Builder
     public static class CustomerInfo {
         private Long customerId;
-        private Integer tokenPrice;
         private Integer tradeTokenAmount;
     }
 }
