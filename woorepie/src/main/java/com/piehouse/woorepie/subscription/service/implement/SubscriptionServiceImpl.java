@@ -121,7 +121,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             .estatePrice(price.getEstatePrice())
                             .estateTokenPrice(price.getEstateTokenPrice())
                             .dividendYield(price.getDividendYield())
-                            .estateStatus(estate.getEstateStatus())
+                            .subState(estate.getEstateStatus())
                             .build();
                 })
                 .collect(Collectors.toList());

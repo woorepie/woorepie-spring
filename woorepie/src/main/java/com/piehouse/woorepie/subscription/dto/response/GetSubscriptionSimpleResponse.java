@@ -39,6 +39,6 @@ public class GetSubscriptionSimpleResponse {
 
     private BigDecimal dividendYield;
 
-    private EstateStatus estateStatus;
+    private EstateStatus subState;
 
 }
