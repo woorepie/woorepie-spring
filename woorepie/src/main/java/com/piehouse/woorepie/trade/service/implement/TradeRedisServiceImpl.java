@@ -18,7 +18,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -56,25 +56,25 @@ public class TradeRedisServiceImpl implements TradeRedisService {
 
     // 매물 기준 매수 주문 전체 조회 (시간순)
     @Override
-    public Set<RedisEstateTradeValue> getEstateBuyOrders(Long estateId) {
+    public List<RedisEstateTradeValue> getEstateBuyOrders(Long estateId) {
         return redisRepository.getEstateBuyOrders(estateId);
     }
 
     // 매물 기준 매도 주문 전체 조회 (시간순)
     @Override
-    public Set<RedisEstateTradeValue> getEstateSellOrders(Long estateId) {
+    public List<RedisEstateTradeValue> getEstateSellOrders(Long estateId) {
         return redisRepository.getEstateSellOrders(estateId);
     }
 
     // 고객 기준 매수 주문 전체 조회 (시간순)
     @Override
-    public Set<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId) {
+    public List<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId) {
         return redisRepository.getCustomerBuyOrders(customerId);
     }
 
     // 고객 기준 매도 주문 전체 조회 (시간순)
     @Override
-    public Set<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId) {
+    public List<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId) {
         return redisRepository.getCustomerSellOrders(customerId);
     }
 

@@ -43,7 +43,6 @@ public class SessionAgent implements UserDetails {
 
     @Override
     public String getUsername() {
-        return "";
+        return agentEmail;
     }
-
 }
