@@ -1,9 +1,6 @@
 package com.piehouse.woorepie.global.kafka.service;
 
-import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
-import com.piehouse.woorepie.global.kafka.dto.SubscriptionRequestEvent;
-import com.piehouse.woorepie.global.kafka.dto.TransactionCreatedEvent;
-import com.piehouse.woorepie.global.kafka.dto.CustomerCreatedEvent;
+import com.piehouse.woorepie.global.kafka.dto.*;
 
 public interface KafkaProducerService {
 
@@ -13,8 +10,8 @@ public interface KafkaProducerService {
 
     void sendCustomerCreated(CustomerCreatedEvent event); // 회원가입 완료 이벤트
 
-    void sendSubscriptionRequest(SubscriptionRequestEvent event);
+    void sendSubscriptionRequest(SubscriptionRequestEvent event); // 청약 신청 이벤트
 
-
+    void sendSubscriptionAccept(SubscriptionAcceptEvent event); // 청약 성공 결과 이벤트
 }
 

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -87,14 +88,41 @@ public class RedisTradeRepository {
 
     // 고객별 매수 주문 조회 (시간순)
     public Set<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId) {
+        // 😎 변경됨! (타입 문제 방지: string으로 받고 objectmapper로 변환)
         String key = String.format(CUSTOMER_BUY_KEY, customerId);
-        return redisCustomerTradeTemplate.opsForZSet().rangeByScore(key, 0, Double.MAX_VALUE);
+        Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
+
+        if (jsonSet == null) return Set.of();
+
+        return jsonSet.stream()
+                .filter(s -> s != null && !s.isEmpty())
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, RedisCustomerTradeValue.class); // DTO 변환
+                    } catch (Exception e) {
+                        throw new RuntimeException("역직렬화 실패: " + json, e);
+                    }
+                })
+                .collect(Collectors.toSet());
     }
 
     // 고객별 매도 주문 조회 (시간순)
     public Set<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId) {
         String key = String.format(CUSTOMER_SELL_KEY, customerId);
-        return redisCustomerTradeTemplate.opsForZSet().rangeByScore(key, 0, Double.MAX_VALUE);
+        Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
+
+        if (jsonSet == null) return Set.of();
+
+        return jsonSet.stream()
+                .filter(s -> s != null && !s.isEmpty())
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, RedisCustomerTradeValue.class); // DTO 변환
+                    } catch (Exception e) {
+                        throw new RuntimeException("역직렬화 실패: " + json, e);
+                    }
+                })
+                .collect(Collectors.toSet());
     }
 
     // 매수 주문 Pop (Lua 스크립트 사용)
@@ -127,7 +155,7 @@ public class RedisTradeRepository {
     private RedisEstateTradeValue deserializeOrder(String json) {
         if (json == null) return null;
         try {
-            return new ObjectMapper().readValue(json, RedisEstateTradeValue.class);
+            return objectMapper.readValue(json, RedisEstateTradeValue.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to deserialize order", e);
         }

@@ -1,9 +1,6 @@
 package com.piehouse.woorepie.global.kafka.service.impliment;
 
-import com.piehouse.woorepie.global.kafka.dto.CustomerCreatedEvent;
-import com.piehouse.woorepie.global.kafka.dto.SubscriptionRequestEvent;
-import com.piehouse.woorepie.global.kafka.dto.TransactionCreatedEvent;
-import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
+import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
 import com.piehouse.woorepie.global.util.KafkaRetryUtil;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +19,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private static final String TRANSACTION_CREATED_TOPIC = "transaction.created";
     private static final String CUSTOMER_CREATED_TOPIC = "customer.created";
     private static final String SUBSCRIPTION_REQUEST_TOPIC = "subscription.request";
+    private static final String SUBSCRIPTION_ACCEPT_TOPIC = "subscription.accept";
 
     // Kafka에 매수, 매도 요청 이벤트 보내기
     @Override
@@ -45,6 +43,12 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     @Override
     public void sendSubscriptionRequest(SubscriptionRequestEvent event) {
         sendWithKey(SUBSCRIPTION_REQUEST_TOPIC, event.getEstateId().toString(), event); // 공통 send() 사용
+    }
+
+    // kafka에 청약 성공 결과 이벤트 보내기
+    @Override
+    public void sendSubscriptionAccept(SubscriptionAcceptEvent event) {
+        send(SUBSCRIPTION_ACCEPT_TOPIC, event);
     }
 
     private <T> void send(String topic, T event) {

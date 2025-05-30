@@ -6,7 +6,7 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
@@ -14,6 +14,7 @@ import com.piehouse.woorepie.global.kafka.dto.SubscriptionRequestEvent;
 import com.piehouse.woorepie.global.kafka.dto.TransactionCreatedEvent;
 import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
 import com.piehouse.woorepie.global.kafka.service.KafkaProducerService;
+import com.piehouse.woorepie.subscription.entity.SubStatus;
 import com.piehouse.woorepie.subscription.entity.Subscription;
 import com.piehouse.woorepie.trade.dto.request.*;
 import com.piehouse.woorepie.notification.service.NotificationService;
@@ -27,9 +28,13 @@ import com.piehouse.woorepie.trade.repository.TradeRepository;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -253,7 +258,7 @@ public class TradeServiceImpl implements TradeService {
     @Override
     @Transactional
     public void createSubscription(CreateSubscriptionTradeRequest request, Long customerId) {
-
+        log.info("청약 신청 serviceimpl createSubscription 들어옴");
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -299,20 +304,47 @@ public class TradeServiceImpl implements TradeService {
                 SubscriptionRequestEvent.builder()
                         .customerId(customerId)
                         .estateId(estateId)
+                        .tokenPrice(subscriptionCost)
                         .amount(requestAmount)
                         .subscribeDate(now)
                         .build()
         );
     }
 
-    private void executeInTransaction(Runnable action) {
+    // 청약 신청 처리 로직
+    @Override
+    @Transactional
+    public void processSubscriptionRequest(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
+        // 1. 매물 상태 확인 (RUNNING 상태만 허용)
+        Estate estate = estateRepository.findById(estateId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
-        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.execute(status -> {
-            action.run();
-            return null;
-        });
+        if (estate.getEstateStatus() != EstateStatus.RUNNING) {
+            throw new CustomException(ErrorCode.ESTATE_NOT_RUNNING);
+        }
 
+        // 2. 사용자 존재 확인
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. 고객 계좌 차감
+        int totalPrice = requestedAmount * tokenPrice;
+        int updatedRows = customerRepository.decreaseBalance(customerId, totalPrice);
+
+        if (updatedRows == 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
+        }
+
+        // 4. 청약 기록 저장
+        Subscription subscription = Subscription.builder()
+                .estate(estate)
+                .customer(customer)
+                .subTokenAmount(requestedAmount)
+                .subDate(LocalDateTime.now()) // 현재 시각 저장
+                .subStatus(SubStatus.PENDING)
+                .build();
+        subscriptionRepository.save(subscription);
+        log.info("청약 요청 DB에 저장 성공 - estateId: {}, customerId: {}", estateId, customerId);
     }
 
 }

@@ -58,9 +58,6 @@ public class Estate {
     @Column(length = 1000)
     private String estateImageUrl;
 
-    @Column(unique = true, length = 200)
-    private String tokenAddress;
-
     @Column(nullable = false, length = 1000)
     private String subGuideUrl;
 
@@ -91,7 +88,7 @@ public class Estate {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SubState subState = SubState.READY;
+    private EstateStatus estateStatus = EstateStatus.READY;
 
     // 매물 정보 수정
     public Estate updateDescription(String newDescription) {
@@ -99,12 +96,12 @@ public class Estate {
         return this;
     }
 
-    public void updateSubStateToSuccess() {
-        this.subState = SubState.SUCCESS;
+    public void updateEstateStatusToSuccess() {
+        this.estateStatus = EstateStatus.SUCCESS;
     }
 
-    public void updateSubStateToExit() {
-        this.subState = SubState.EXIT;
+    public void updateEstateStatusToExit() {
+        this.estateStatus = EstateStatus.EXIT;
     }
 
 }

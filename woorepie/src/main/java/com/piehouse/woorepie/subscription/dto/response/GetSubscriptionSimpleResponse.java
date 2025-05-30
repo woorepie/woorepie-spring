@@ -1,6 +1,6 @@
 package com.piehouse.woorepie.subscription.dto.response;
 
-import com.piehouse.woorepie.estate.entity.SubState;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,6 +39,6 @@ public class GetSubscriptionSimpleResponse {
 
     private BigDecimal dividendYield;
 
-    private SubState subState;
+    private EstateStatus subState;
 
 }

@@ -17,4 +17,5 @@ public interface TradeService {
 
     void createSubscription(CreateSubscriptionTradeRequest request, Long customerId);
 
+    void processSubscriptionRequest(Long estateId, Long customerId, int requestedAmount, int tokenPrice);
 }

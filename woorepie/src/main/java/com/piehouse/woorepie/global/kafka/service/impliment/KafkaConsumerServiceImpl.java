@@ -15,7 +15,9 @@ import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaConsumerService;
+import com.piehouse.woorepie.subscription.service.SubscriptionService;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
+import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -32,7 +34,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
+    private final TradeService tradeService;
     private final TradeRedisService tradeRedisService;
+    private final SubscriptionService subscriptionService;
     private final EstateRedisServiceImpl estateRedisServiceImpl;
     private final EstateRepository estateRepository;
     private final AccountRepository accountRepository;
@@ -57,9 +61,23 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @Override
     @KafkaListener(topics = "subscription.request")
     public void consumeSubscriptionRequest(SubscriptionRequestEvent event) {
-        log.info("청약 요청 수신: customerId={}, estateId={}, amount={}, subscribeDate={}",
+        log.info("[Kafka] 청약 요청 수신: customerId={}, estateId={}, amount={}, subscribeDate={}",
                 event.getCustomerId(), event.getEstateId(), event.getAmount(), event.getSubscribeDate());
-        // 토큰 체크 및 결과 처리)은 이후에 구현
+        tradeService.processSubscriptionRequest(event.getEstateId(), event.getCustomerId(), event.getAmount(), event.getTokenPrice());
+    }
+
+    @Override
+    @KafkaListener(topics = "subscription.success")
+    public void consumeSubscriptionSuccess(SubscriptionResultEvent event) {
+        log.info("[Kafka] 청약 결과 - 모집 완료 수신 : estateId={}", event.getEstateId());
+        subscriptionService.updateSubscriptionsOnSuccess(event.getEstateId());
+    }
+
+    @Override
+    @KafkaListener(topics = "subscription.failure")
+    public void consumeSubscriptionFailure(SubscriptionResultEvent event) {
+        log.info("[Kafka] 청약 결과 - 모집 실패 수신 : estateId={}", event.getEstateId());
+        subscriptionService.updateSubscriptionsOnFailure(event.getEstateId());
     }
 
     @Override
@@ -107,7 +125,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         });
 
         // 매물 상태 변경 → SUCCESS
-        estate.updateSubStateToSuccess();
+        estate.updateEstateStatusToSuccess();
         estateRepository.save(estate);
 
     }
@@ -172,7 +190,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
         // 2. 상태 EXIT 변경
-        estate.updateSubStateToExit();
+        estate.updateEstateStatusToExit();
         estateRepository.save(estate);
 
         // 3. 최근 시세 조회
