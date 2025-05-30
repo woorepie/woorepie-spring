@@ -15,4 +15,13 @@ public class S3AgentRequest {
     @Email
     private String agentEmail;
 
+    @NotBlank
+    private String identificationFileType;
+
+    @NotBlank
+    private String certFileType;
+
+    @NotBlank
+    private String warrantFileType;
+
 }

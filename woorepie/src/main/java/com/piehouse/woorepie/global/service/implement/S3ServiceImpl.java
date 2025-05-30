@@ -1,5 +1,8 @@
 package com.piehouse.woorepie.global.service.implement;
 
+import com.piehouse.woorepie.global.dto.request.S3AgentRequest;
+import com.piehouse.woorepie.global.dto.request.S3CustomerRequest;
+import com.piehouse.woorepie.global.dto.request.S3EstateRequest;
 import com.piehouse.woorepie.global.dto.response.S3UrlResponse;
 import com.piehouse.woorepie.global.service.S3Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +15,8 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class S3ServiceImpl implements S3Service {
@@ -45,14 +48,15 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public S3UrlResponse generateCustomerPresignedUrl(String domain, String customerEmail) {
+    public S3UrlResponse generateCustomerPresignedUrl(String domain, S3CustomerRequest s3request) {
 
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String objectKey = String.format("%s/%s/%s", domain+"/identification", customerEmail, timestamp);
+        String objectKey = String.format("%s/%s/%s", domain+"/identification", s3request.getCustomerEmail(), timestamp);
 
         PutObjectRequest putReq = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(objectKey)
+                .contentType(s3request.getFileType())
                 .build();
 
         PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
@@ -71,18 +75,26 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public List<S3UrlResponse> generateAgentPresignedUrl(String domain, String agentEmail) {
+    public List<S3UrlResponse> generateAgentPresignedUrl(String domain, S3AgentRequest s3request) {
 
-        String[] files = {"identification", "cert", "warrant"};
+        Map<String, String> fileTypes = Map.of(
+                "identification", s3request.getIdentificationFileType(),
+                "cert", s3request.getCertFileType(),
+                "warrant", s3request.getWarrantFileType()
+        );
+
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-        return Arrays.stream(files)
-                .map(fileType -> {
-                    String objectKey = String.format("%s/%s/%s-%s", domain, agentEmail, fileType, timestamp);
+        return fileTypes.entrySet().stream()
+                .map(entry -> {
+                    String fileType = entry.getKey();
+                    String contentType = entry.getValue();
+                    String objectKey = String.format("%s/%s/%s-%s", domain, s3request.getAgentEmail(), fileType, timestamp);
 
                     PutObjectRequest putReq = PutObjectRequest.builder()
                             .bucket(bucketName)
                             .key(objectKey)
+                            .contentType(contentType)
                             .build();
 
                     PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
@@ -97,23 +109,35 @@ public class S3ServiceImpl implements S3Service {
                             .build();
                 })
                 .toList();
-
     }
 
     @Override
-    public List<S3UrlResponse> generateEstatePresignedUrl(String domain, String estateAddress) {
+    public List<S3UrlResponse> generateEstatePresignedUrl(String domain, S3EstateRequest s3request) {
+        System.out.println(s3request.toString());
+        Map<String, String> fileTypeToContentType = Map.of(
+                "estate-image", s3request.getImageFileType(),
+                "sub-guide", s3request.getSubGuideFileType(),
+                "securities-report", s3request.getSecuritiesReportFileType(),
+                "investment-explanation", s3request.getInvestmentExplanationFileType(),
+                "property-mng-contract", s3request.getPropertyMngContractFileType(),
+                "appraisal-report", s3request.getAppraisalReportFileType()
+        );
 
-        String[] files = {"estate-image", "sub-guide", "securities-report", "investment-explanation",
-        "property-mng-contract", "appraisal-report"};
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-        return Arrays.stream(files)
-                .map(fileType -> {
-                    String objectKey = String.format("%s/%s/%s-%s", domain, estateAddress, fileType, timestamp);
+        return fileTypeToContentType.entrySet().stream()
+                .map(entry -> {
+                    String fileType = entry.getKey();
+                    String contentType = entry.getValue();
+
+                    String objectKey = String.format(
+                            "%s/%s/%s-%s", domain, s3request.getEstateAddress(), fileType, timestamp
+                    );
 
                     PutObjectRequest putReq = PutObjectRequest.builder()
                             .bucket(bucketName)
                             .key(objectKey)
+                            .contentType(contentType)
                             .build();
 
                     PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
