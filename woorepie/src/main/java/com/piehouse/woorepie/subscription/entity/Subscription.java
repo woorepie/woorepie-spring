@@ -10,13 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "subscription",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_customer_estate_date",
-                columnNames = {"customer_id", "estate_id", "sub_date"}
-        )
-)
+@Table(name = "subscription")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
