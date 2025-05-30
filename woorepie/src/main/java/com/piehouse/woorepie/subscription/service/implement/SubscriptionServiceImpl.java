@@ -272,7 +272,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public void updateSubscriptionsOnFailure(Long estateId) {
         // 1. 전체 pending 청약 내역 조회
         List<Subscription> pendingSubs = subscriptionRepository
-                .findAllByEstate_EstateIdAndSubStatusOrderBySubDateAsc(estateId, SubStatus.PENDING);
+                .findAllByEstate_EstateIdAndSubStatus(estateId, SubStatus.PENDING);
 
         // 2. 토큰당 가격 조회
         RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);

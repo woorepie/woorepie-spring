@@ -15,6 +15,7 @@ import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaConsumerService;
+import com.piehouse.woorepie.subscription.service.SubscriptionService;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
     private final TradeService tradeService;
     private final TradeRedisService tradeRedisService;
+    private final SubscriptionService subscriptionService;
     private final EstateRedisServiceImpl estateRedisServiceImpl;
     private final EstateRepository estateRepository;
     private final AccountRepository accountRepository;
@@ -68,14 +70,14 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @KafkaListener(topics = "subscription.success")
     public void consumeSubscriptionSuccess(SubscriptionResultEvent event) {
         log.info("[Kafka] 청약 결과 - 모집 완료 수신 : estateId={}", event.getEstateId());
-        // 청약 모집 성공 서비스 로직 추후 추가 예정
+        subscriptionService.updateSubscriptionsOnSuccess(event.getEstateId());
     }
 
     @Override
     @KafkaListener(topics = "subscription.failure")
     public void consumeSubscriptionFailure(SubscriptionResultEvent event) {
         log.info("[Kafka] 청약 결과 - 모집 실패 수신 : estateId={}", event.getEstateId());
-        // 청약 모집 실패 서비스 로직 추후 추가 예정
+        subscriptionService.updateSubscriptionsOnFailure(event.getEstateId());
     }
 
     @Override
