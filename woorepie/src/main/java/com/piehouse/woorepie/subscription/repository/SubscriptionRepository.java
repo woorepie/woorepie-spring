@@ -22,4 +22,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
     // 해당 매물의 특정 상태 청약 내역을 신청일 기준 오름차순 조회
     List<Subscription> findAllByEstate_EstateIdAndSubStatusOrderBySubDateAsc(Long estateId, SubStatus subStatus);
+
+    // 해당 매물의 특정 상태 청약 내역 전체 조회
+    List<Subscription> findAllByEstate_EstateIdAndSubStatus(Long estateId, SubStatus subStatus);
 }

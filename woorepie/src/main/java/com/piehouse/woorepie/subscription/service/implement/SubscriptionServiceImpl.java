@@ -172,9 +172,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     }
 
+    // 청약 모집 성공 : 선착순 배정
     @Override
     @Transactional
-    public void updateSubscriptionStatus(Long estateId) {
+    public void updateSubscriptionsOnSuccess(Long estateId) {
         // 1. pending 상태 청약 내역 모두 조회 (신청일순 정렬)
         List<Subscription> pendingSubs = subscriptionRepository
                 .findAllByEstate_EstateIdAndSubStatusOrderBySubDateAsc(estateId, SubStatus.PENDING);
@@ -263,6 +264,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .build();
 
         kafkaProducerService.sendSubscriptionAccept(event);
+    }
+
+    // 청약 모집 실패 : 전체 실패 처리 및 일괄 환불
+    @Override
+    @Transactional
+    public void updateSubscriptionsOnFailure(Long estateId) {
+        // 1. 전체 pending 청약 내역 조회
+        List<Subscription> pendingSubs = subscriptionRepository
+                .findAllByEstate_EstateIdAndSubStatus(estateId, SubStatus.PENDING);
+
+        // 2. 토큰당 가격 조회
+        RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
+        int tokenPrice = redisPrice.getEstateTokenPrice();
+
+        // 3. 모두 FAILURE 처리 + 일괄 저장
+        pendingSubs.forEach(sub -> sub.changeStatus(SubStatus.FAILURE));
+        subscriptionRepository.saveAll(pendingSubs);
+
+        // 4. 일괄 환불
+        pendingSubs.forEach(sub -> refundSubscriptionFailure(sub, tokenPrice));
     }
 
     // 환불 처리 메소드

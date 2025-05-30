@@ -258,7 +258,7 @@ public class TradeServiceImpl implements TradeService {
     @Override
     @Transactional
     public void createSubscription(CreateSubscriptionTradeRequest request, Long customerId) {
-
+        log.info("청약 신청 serviceimpl createSubscription 들어옴");
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -304,6 +304,7 @@ public class TradeServiceImpl implements TradeService {
                 SubscriptionRequestEvent.builder()
                         .customerId(customerId)
                         .estateId(estateId)
+                        .tokenPrice(subscriptionCost)
                         .amount(requestAmount)
                         .subscribeDate(now)
                         .build()
