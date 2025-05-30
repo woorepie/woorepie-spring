@@ -2,6 +2,8 @@ package com.piehouse.woorepie.subscription.service.implement;
 
 import com.piehouse.woorepie.agent.entity.Agent;
 import com.piehouse.woorepie.agent.repository.AgentRepository;
+import com.piehouse.woorepie.customer.entity.Account;
+import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
@@ -46,6 +48,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final KafkaProducerService kafkaProducerService;
     private final EstateRedisService estateRedisService;
     private final CustomerRepository customerRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     @Transactional
@@ -204,14 +207,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 failureSubs.add(sub);
                 continue;
             }
-
+            int successAmount;
             if (reqAmount <= remain) { // 전부 성공
                 sub.changeStatus(SubStatus.SUCCESS);
                 allocated += reqAmount;
+                successAmount = reqAmount;
             } else { // 부분 성공(한 명만 발생 가능)
                 sub.changeStatus(SubStatus.SUCCESS);
                 sub.changeSubTokenAmount(remain);
                 allocated += remain;
+                successAmount = remain;
 
                 // 나머지 실패 부분은 새로 row 생성
                 partialFailureRow = Subscription.builder()
@@ -222,6 +227,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         .subStatus(SubStatus.FAILURE)
                         .build();
             }
+
+            // 성공자에 대해 계좌 row 생성/업데이트
+            Account account = accountRepository
+                    .findByCustomerAndEstate(sub.getCustomer(), estate)
+                    .orElse(null);
+
+            if (account == null) {
+                // Account가 없으면 새로 생성
+                account = Account.builder()
+                        .customer(sub.getCustomer())
+                        .estate(estate)
+                        .accountTokenAmount(successAmount)
+                        .totalAccountAmount(successAmount * tokenPrice)
+                        .build();
+            } else {
+                // 이미 있으면 토큰, 금액 증가
+                account.updateTokenAmount(account.getAccountTokenAmount() + successAmount);
+                account.updateTotalAmount(account.getTotalAccountAmount() + (successAmount * tokenPrice));
+            }
+            accountRepository.save(account);
         }
 
         // 4. 부분 실패자 row 저장/환불 대상 추가
