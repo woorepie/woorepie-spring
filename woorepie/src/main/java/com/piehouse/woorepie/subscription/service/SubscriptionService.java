@@ -16,6 +16,9 @@ public interface SubscriptionService {
     //청약 매물 상세정보 조회
     GetSubscriptionDetailsResponse getSubscriptionDetails(Long estateId);
 
-    // 청약 결과 DB에 업데이트
-    void updateSubscriptionStatus(Long estateId);
+    // 청약 모집 완료에 따른 처리
+    void updateSubscriptionsOnSuccess(Long estateId);
+
+    // 청약 모집 실패에 따른 처리
+    void updateSubscriptionsOnFailure(Long estateId);
 }
