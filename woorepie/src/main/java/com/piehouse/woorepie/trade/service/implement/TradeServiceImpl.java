@@ -28,21 +28,16 @@ import com.piehouse.woorepie.trade.repository.TradeRepository;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
-import org.springframework.transaction.support.TransactionTemplate;
 import com.piehouse.woorepie.estate.service.EstateRedisService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -178,7 +173,7 @@ public class TradeServiceImpl implements TradeService {
 
     private int getCumulativeBuyCost(Long customerId) {
 
-        Set<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
+        List<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
         if (orders == null || orders.isEmpty()) {
             log.info("[누적매수] 데이터없음 - customer:{}", customerId);
             return 0;
@@ -238,7 +233,7 @@ public class TradeServiceImpl implements TradeService {
     private int getCumulativeSellAmount(Long customerId, Long estateId) {
 
         log.info("getCumulativeSell 들어옴");
-        Set<RedisEstateTradeValue> orders = redisOrderRepository.getEstateSellOrders(estateId);
+        List<RedisEstateTradeValue> orders = redisOrderRepository.getEstateSellOrders(estateId);
         log.info("매도 요청 누적합 계산을 위한 주문 리스트 확인: {}", orders);
 
         if (orders == null || orders.isEmpty()) {
@@ -283,7 +278,7 @@ public class TradeServiceImpl implements TradeService {
         int subscriptionCost = requestAmount * tokenPrice;
 
         // Redis에서 고객의 기존 매수 요청 금액 조회
-        Set<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
+        List<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
         int cumulativeBuyCost = orders == null ? 0 :
                 orders.stream()
                         .filter(Objects::nonNull)

@@ -75,24 +75,49 @@ public class RedisTradeRepository {
     }
 
     // 매물별 매수 주문 조회 (시간순)
-    public Set<RedisEstateTradeValue> getEstateBuyOrders(Long estateId) {
+    public List<RedisEstateTradeValue> getEstateBuyOrders(Long estateId) {
         String key = String.format(ESTATE_BUY_KEY, estateId);
-        return redisEstateTradeTemplate.opsForZSet().rangeByScore(key, 0, Double.MAX_VALUE);
+        Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
+
+        if (jsonSet == null) return List.of();
+
+        return jsonSet.stream()
+                .filter(s -> s != null && !s.isEmpty())
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, RedisEstateTradeValue.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException("역직렬화 실패: " + json, e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     // 매물별 매도 주문 조회 (시간순)
-    public Set<RedisEstateTradeValue> getEstateSellOrders(Long estateId) {
+    public List<RedisEstateTradeValue> getEstateSellOrders(Long estateId) {
         String key = String.format(ESTATE_SELL_KEY, estateId);
-        return redisEstateTradeTemplate.opsForZSet().rangeByScore(key, 0, Double.MAX_VALUE);
+        Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
+
+        if (jsonSet == null) return List.of();
+
+        return jsonSet.stream()
+                .filter(s -> s != null && !s.isEmpty())
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, RedisEstateTradeValue.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException("역직렬화 실패: " + json, e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     // 고객별 매수 주문 조회 (시간순)
-    public Set<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId) {
-        // 😎 변경됨! (타입 문제 방지: string으로 받고 objectmapper로 변환)
+    public List<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId) {
         String key = String.format(CUSTOMER_BUY_KEY, customerId);
         Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
 
-        if (jsonSet == null) return Set.of();
+        if (jsonSet == null) return List.of();
 
         return jsonSet.stream()
                 .filter(s -> s != null && !s.isEmpty())
@@ -103,15 +128,15 @@ public class RedisTradeRepository {
                         throw new RuntimeException("역직렬화 실패: " + json, e);
                     }
                 })
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     // 고객별 매도 주문 조회 (시간순)
-    public Set<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId) {
+    public List<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId) {
         String key = String.format(CUSTOMER_SELL_KEY, customerId);
         Set<String> jsonSet = redisStringTemplate.opsForZSet().range(key, 0, -1);
 
-        if (jsonSet == null) return Set.of();
+        if (jsonSet == null) return List.of();
 
         return jsonSet.stream()
                 .filter(s -> s != null && !s.isEmpty())
@@ -122,7 +147,7 @@ public class RedisTradeRepository {
                         throw new RuntimeException("역직렬화 실패: " + json, e);
                     }
                 })
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     // 매수 주문 Pop (Lua 스크립트 사용)

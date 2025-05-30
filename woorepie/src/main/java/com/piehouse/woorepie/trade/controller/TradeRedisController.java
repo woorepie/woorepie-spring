@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/redis")
@@ -34,29 +34,29 @@ public class TradeRedisController { // Redis 동작 테스트용 Controller
 
     // 매물 기준 매수 주문 전체 조회
     @GetMapping("/estate/{estateId}/buy")
-    public ResponseEntity<ApiResponse<Set<RedisEstateTradeValue>>> getEstateBuyOrders(@PathVariable Long estateId, HttpServletRequest request) {
-        Set<RedisEstateTradeValue> orders = tradeRedisService.getEstateBuyOrders(estateId);
+    public ResponseEntity<ApiResponse<List<RedisEstateTradeValue>>> getEstateBuyOrders(@PathVariable Long estateId, HttpServletRequest request) {
+        List<RedisEstateTradeValue> orders = tradeRedisService.getEstateBuyOrders(estateId);
         return ApiResponseUtil.success(orders, request);
     }
 
     // 매물 기준 매도 주문 전체 조회
     @GetMapping("/estate/{estateId}/sell")
-    public ResponseEntity<ApiResponse<Set<RedisEstateTradeValue>>> getEstateSellOrders(@PathVariable Long estateId, HttpServletRequest request) {
-        Set<RedisEstateTradeValue> orders = tradeRedisService.getEstateSellOrders(estateId);
+    public ResponseEntity<ApiResponse<List<RedisEstateTradeValue>>> getEstateSellOrders(@PathVariable Long estateId, HttpServletRequest request) {
+        List<RedisEstateTradeValue> orders = tradeRedisService.getEstateSellOrders(estateId);
         return ApiResponseUtil.success(orders, request);
     }
 
     // 고객 기준 매수 주문 전체 조회
     @GetMapping("/customer/buy")
-    public ResponseEntity<ApiResponse<Set<RedisCustomerTradeValue>>> getCustomerBuyOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
-        Set<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerBuyOrders(customerId);
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerBuyOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
+        List<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerBuyOrders(customerId);
         return ApiResponseUtil.success(orders, request);
     }
 
     // 고객 기준 매도 주문 전체 조회
     @GetMapping("/customer/sell")
-    public ResponseEntity<ApiResponse<Set<RedisCustomerTradeValue>>> getCustomerSellOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
-        Set<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerSellOrders(customerId);
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerSellOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
+        List<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerSellOrders(customerId);
         return ApiResponseUtil.success(orders, request);
     }
 
