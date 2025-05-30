@@ -4,7 +4,7 @@ import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
 import com.piehouse.woorepie.trade.dto.request.RedisCustomerTradeValue;
 import com.piehouse.woorepie.trade.dto.request.RedisEstateTradeValue;
 
-import java.util.Set;
+import java.util.List;
 
 public interface TradeRedisService {
     // 매물과 고객 기준 매수 주문 동시 저장
@@ -14,16 +14,16 @@ public interface TradeRedisService {
     void saveSellOrder(Long estateId, Long customerId, int tokenAmount, int tokenPrice);
 
     // 매물 기준 매수 주문 전체 조회 (시간순)
-    Set<RedisEstateTradeValue> getEstateBuyOrders(Long estateId);
+    List<RedisEstateTradeValue> getEstateBuyOrders(Long estateId);
 
     // 매물 기준 매도 주문 전체 조회 (시간순)
-    Set<RedisEstateTradeValue> getEstateSellOrders(Long estateId);
+    List<RedisEstateTradeValue> getEstateSellOrders(Long estateId);
 
     // 고객 기준 매수 주문 전체 조회 (시간순)
-    Set<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId);
+    List<RedisCustomerTradeValue> getCustomerBuyOrders(Long customerId);
 
     // 고객 기준 매도 주문 전체 조회 (시간순)
-    Set<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId);
+    List<RedisCustomerTradeValue> getCustomerSellOrders(Long customerId);
 
     // 매물 기준 가장 먼저 들어온 매수 주문 꺼내기 + 고객 기준에서도 함께 삭제
     RedisEstateTradeValue popOldestBuyOrderFromBoth(Long estateId);
