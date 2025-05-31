@@ -3,6 +3,7 @@ package com.piehouse.woorepie.customer.controller;
 import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
 import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
+import com.piehouse.woorepie.customer.dto.request.PlusAccountBalance;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -21,7 +22,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -87,6 +87,17 @@ public class CustomerController {
         log.info("Get customer account request");
         List<GetCustomerAccountResponse> getCustomerAccountResponseList = customerService.getCustomerAccount(session.getCustomerId());
         return ApiResponseUtil.success(getCustomerAccountResponseList, request);
+    }
+
+
+    // 계좌 잔액 충전
+    @PostMapping("/account/balance")
+    public ResponseEntity<ApiResponse<Void>> plusCustomerAccountBalance(@AuthenticationPrincipal SessionCustomer session,
+                                                                        @RequestBody PlusAccountBalance requestPrice,
+                                                                        HttpServletRequest request) {
+        log.info("Plus customer account balance request");
+        customerService.plusCustomerAccountBalance(session.getCustomerId(), requestPrice.getPrice());
+        return ApiResponseUtil.success(null, request);
     }
 
     // 마이페이지 청약 내역 조회

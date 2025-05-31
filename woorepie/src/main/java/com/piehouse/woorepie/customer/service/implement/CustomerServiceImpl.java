@@ -234,6 +234,19 @@ public class CustomerServiceImpl implements CustomerService {
                 .customerJoinDate(customer.getCustomerJoinDate())
                 .build();
     }
+    
+    // 계좌 잔액 충전
+    @Override
+    @Transactional
+    public void plusCustomerAccountBalance(Long customerId, Integer price) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        customer.plusAccountBalance(price);
+        customerRepository.save(customer);
+        
+    }
 
     // 계좌 내역 조회
     @Override

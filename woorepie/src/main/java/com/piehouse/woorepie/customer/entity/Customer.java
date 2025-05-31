@@ -77,4 +77,8 @@ public class Customer {
         this.customerPassword = newPassword;
     }
 
+    public void plusAccountBalance(Integer price) {
+        this.accountBalance += price;
+    }
+
 }

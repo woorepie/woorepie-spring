@@ -7,6 +7,7 @@ import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerResponse;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerTradeResponse;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -24,6 +25,8 @@ public interface CustomerService {
     void createCustomer(CreateCustomerRequest requestDto);
 
     GetCustomerResponse getCustomer(Long customerId);
+
+    void plusCustomerAccountBalance(Long customerId, Integer price);
 
     List<GetCustomerAccountResponse> getCustomerAccount(Long customerId);
 
