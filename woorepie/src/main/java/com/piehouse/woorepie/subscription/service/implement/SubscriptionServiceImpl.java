@@ -69,6 +69,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .totalEstateArea(request.getTotalEstateArea())
                 .tradedEstateArea(request.getTradeEstateArea())
                 .estateUseZone(request.getEstateUseZone())
+                .estateSalePrice(request.getEstatePrice())
                 .estateDescription(request.getEstateDescription())
                 .estateImageUrl(s3serviceImpl.getPublicS3Url(request.getEstateImageUrlKey()))
                 .subGuideUrl(s3serviceImpl.getPublicS3Url(request.getSubGuideUrlKey()))
@@ -83,12 +84,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         estateRepository.save(estate);
 
     //매물 시세 테이블
-        EstatePrice estatePrice = EstatePrice.builder()
-                .estate(estate)
-                .estatePrice(request.getEstatePrice())
-                .estatePriceDate(LocalDateTime.now())
-                .build();
-        estatePriceRepository.save(estatePrice);
+//        EstatePrice estatePrice = EstatePrice.builder()
+//                .estate(estate)
+//                .estatePrice(request.getEstatePrice())
+//                .estatePriceDate(LocalDateTime.now())
+//                .build();
+//        estatePriceRepository.save(estatePrice);
 
     }
     
