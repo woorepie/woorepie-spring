@@ -3,10 +3,16 @@ package com.piehouse.woorepie.agent.service.implement;
 import com.piehouse.woorepie.agent.dto.SessionAgent;
 import com.piehouse.woorepie.agent.dto.request.CreateAgentRequest;
 import com.piehouse.woorepie.agent.dto.request.LoginAgentRequest;
+import com.piehouse.woorepie.agent.dto.response.AgentEstateListResponse;
 import com.piehouse.woorepie.agent.dto.response.GetAgentResponse;
 import com.piehouse.woorepie.agent.entity.Agent;
 import com.piehouse.woorepie.agent.repository.AgentRepository;
 import com.piehouse.woorepie.agent.service.AgentService;
+import com.piehouse.woorepie.estate.entity.Estate;
+import com.piehouse.woorepie.estate.entity.EstatePrice;
+import com.piehouse.woorepie.estate.repository.DividendRepository;
+import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
+import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
@@ -23,6 +29,8 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,6 +38,9 @@ import java.util.UUID;
 public class AgentServiceImpl implements AgentService {
 
     private final AgentRepository agentRepository;
+    private final EstateRepository estateRepository;
+    private final EstatePriceRepository estatePriceRepository;
+    private final DividendRepository dividendRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3ServiceImpl s3Service;
 
@@ -136,6 +147,39 @@ public class AgentServiceImpl implements AgentService {
                 .businessPhoneNumber(agent.getBusinessPhoneNumber())
                 .warrantUrl(agent.getWarrantUrl())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AgentEstateListResponse> getEstatesByAgent(Long agentId) {
+        // 수정 전
+        // List<Estate> estateList = estateRepository.findByAgentId(agentId);
+
+        // ✅ 수정 후
+        List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
+
+        return estateList.stream()
+                .map(e -> {
+                    Integer estateTokenPrice = estatePriceRepository
+                            .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(e.getEstateId())
+                            .map(EstatePrice::getEstatePrice)
+                            .orElse(null);
+
+                    BigDecimal dividendYield = dividendRepository
+                            .findTopByEstate_EstateIdOrderByDividendDateDesc(e.getEstateId())
+                            .map(d -> d.getDividendYield())
+                            .orElse(null);
+
+                    return AgentEstateListResponse.builder()
+                            .estateId(e.getEstateId())
+                            .estateName(e.getEstateName())
+                            .tokenAmount(e.getTokenAmount())
+                            .estateTokenPrice(estateTokenPrice)
+                            .dividendYield(dividendYield)
+                            .estateStatus(e.getEstateStatus().name())
+                            .build();
+                })
+                .toList();
     }
 
 }
