@@ -3,6 +3,7 @@ package com.piehouse.woorepie.agent.controller;
 import com.piehouse.woorepie.agent.dto.SessionAgent;
 import com.piehouse.woorepie.agent.dto.request.CreateAgentRequest;
 import com.piehouse.woorepie.agent.dto.request.LoginAgentRequest;
+import com.piehouse.woorepie.agent.dto.response.AgentEstateListResponse;
 import com.piehouse.woorepie.agent.dto.response.GetAgentResponse;
 import com.piehouse.woorepie.agent.service.AgentService;
 import com.piehouse.woorepie.global.response.ApiResponse;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -62,5 +65,17 @@ public class AgentController {
         GetAgentResponse response = agentService.getAgentInfo(sessionAgent.getAgentId());
         return ApiResponseUtil.of(HttpStatus.OK, "대행인 정보 조회 성공", response, request);
     }
+
+    // 대행인 등록 매물 목록 조회
+    @GetMapping("/estates")
+    public ResponseEntity<ApiResponse<List<AgentEstateListResponse>>> getMyEstates(
+            @AuthenticationPrincipal SessionAgent sessionAgent,
+            HttpServletRequest request
+    ) {
+        Long agentId = sessionAgent.getAgentId();
+        List<AgentEstateListResponse> estateList = agentService.getEstatesByAgent(agentId);
+        return ApiResponseUtil.success(estateList, request);
+    }
+
 
 }

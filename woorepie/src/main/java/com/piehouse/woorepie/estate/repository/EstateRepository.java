@@ -17,4 +17,7 @@ public interface EstateRepository extends JpaRepository<Estate, Long> {
 
     List<Estate> findByEstateStatusIn(List<EstateStatus> estateStatuses);
 
+    List<Estate> findByAgent_AgentId(Long agentId);
+
+
 }
