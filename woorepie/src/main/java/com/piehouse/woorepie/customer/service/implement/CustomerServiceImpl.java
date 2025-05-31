@@ -273,7 +273,7 @@ public class CustomerServiceImpl implements CustomerService {
                             .estateId(subscription.getEstate().getEstateId())
                             .estateName(subscription.getEstate().getEstateName())
                             .subTokenAmount(subscription.getSubTokenAmount())
-                            .subTokenPrice(price.getEstateTokenPrice() * subscription.getSubTokenAmount())
+                            .subTokenPrice(price.getEstateTokenPrice())
                             .subDate(subscription.getSubDate())
                             .subStatus(subscription.getSubStatus())
                             .build();

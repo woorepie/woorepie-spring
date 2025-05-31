@@ -299,7 +299,7 @@ public class TradeServiceImpl implements TradeService {
                 SubscriptionRequestEvent.builder()
                         .customerId(customerId)
                         .estateId(estateId)
-                        .tokenPrice(subscriptionCost)
+                        .tokenPrice(tokenPrice)
                         .amount(requestAmount)
                         .subscribeDate(now)
                         .build()
