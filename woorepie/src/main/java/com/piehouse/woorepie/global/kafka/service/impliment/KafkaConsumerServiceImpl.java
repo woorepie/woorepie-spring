@@ -68,14 +68,14 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
     @Override
     @KafkaListener(topics = "subscription.success")
-    public void consumeSubscriptionSuccess(SubscriptionResultEvent event) {
+    public void consumeSubscriptionSuccess(CompleteEvent event) {
         log.info("[Kafka] 청약 결과 - 모집 완료 수신 : estateId={}", event.getEstateId());
         subscriptionService.updateSubscriptionsOnSuccess(event.getEstateId());
     }
 
     @Override
     @KafkaListener(topics = "subscription.failure")
-    public void consumeSubscriptionFailure(SubscriptionResultEvent event) {
+    public void consumeSubscriptionFailure(CompleteEvent event) {
         log.info("[Kafka] 청약 결과 - 모집 실패 수신 : estateId={}", event.getEstateId());
         subscriptionService.updateSubscriptionsOnFailure(event.getEstateId());
     }
@@ -134,7 +134,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @Override
     @KafkaListener(topics = "dividend.accept")
     @Transactional
-    public void handleDividendApproval(DividendAcceptMessage message) {
+    public void handleDividendApproval(DividendAcceptEvent message) {
 
         log.info("[Kafka] 배당금 승인 수신");
 
@@ -182,7 +182,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     @Override
     @KafkaListener(topics = "exit.accept")
     @Transactional
-    public void handleExitApproval(ExitAcceptMessage message) {
+    public void handleExitApproval(CompleteEvent message) {
         Long estateId = message.getEstateId();
 
         // 1. 매물 조회

@@ -8,14 +8,14 @@ public interface KafkaConsumerService {
 
     void consumeSubscriptionRequest(SubscriptionRequestEvent event);
 
-    void consumeSubscriptionSuccess(SubscriptionResultEvent event);
+    void consumeSubscriptionSuccess(CompleteEvent event);
 
-    void consumeSubscriptionFailure(SubscriptionResultEvent event);
+    void consumeSubscriptionFailure(CompleteEvent event);
 
     void handleSubscriptionApproval(SubscriptionAcceptMessage message);
 
-    void handleDividendApproval(DividendAcceptMessage message);
+    void handleDividendApproval(DividendAcceptEvent message);
 
-    void handleExitApproval(ExitAcceptMessage message);
+    void handleExitApproval(CompleteEvent message);
 
 }
