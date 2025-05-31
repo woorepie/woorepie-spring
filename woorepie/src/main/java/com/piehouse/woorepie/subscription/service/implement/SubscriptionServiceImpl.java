@@ -271,24 +271,20 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
-    // 성공자에 대해 Kafka accept 이벤트 발송
+    // 성공자에 대해 Kafka accept 이벤트 개별 발송
     private void sendKafkaAcceptEvent(List<Subscription> successSubs, Long estateId, int tokenPrice) {
         if (successSubs.isEmpty()) return;
 
-        List<SubscriptionAcceptEvent.CustomerInfo> customerList = successSubs.stream()
-                .map(sub -> new SubscriptionAcceptEvent.CustomerInfo(
-                        sub.getCustomer().getCustomerId(),
-                        sub.getSubTokenAmount()
-                ))
-                .toList();
+        for (Subscription sub : successSubs) {
+            SubscriptionAcceptEvent event = SubscriptionAcceptEvent.builder()
+                    .estateId(estateId)
+                    .customerId(sub.getCustomer().getCustomerId())
+                    .tokenPrice(tokenPrice)
+                    .tradeTokenAmount(sub.getSubTokenAmount())
+                    .build();
 
-        SubscriptionAcceptEvent event = SubscriptionAcceptEvent.builder()
-                .estateId(estateId)
-                .tokenPrice(tokenPrice)
-                .customer(customerList)
-                .build();
-
-        kafkaProducerService.sendSubscriptionAccept(event);
+            kafkaProducerService.sendSubscriptionAccept(event);
+        }
     }
 
     // 청약 모집 실패 : 전체 실패 처리 및 일괄 환불
