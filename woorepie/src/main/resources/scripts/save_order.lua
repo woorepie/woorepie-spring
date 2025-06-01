@@ -12,4 +12,8 @@ local customerOrder = cjson.decode(customerOrderJson)
 redis.call('ZADD', estateKey, timestamp, estateOrderJson)
 redis.call('ZADD', customerKey, timestamp, customerOrderJson)
 
+-- 12시간 TTL(43200초) 설정
+redis.call('EXPIRE', estateKey, 43200)
+redis.call('EXPIRE', customerKey, 43200)
+
 return 1
