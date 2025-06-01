@@ -68,6 +68,12 @@ dependencies {
     //XML
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.0'
 
+    //Openai
+    implementation 'org.springframework:spring-web'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+
+
     // TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
