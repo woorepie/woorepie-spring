@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/s3-presigned-url/customer",
                                 "/s3-presigned-url/agent",
                                 "/estate",
+                                "/estate/land-price",
                                 "/subscription",
                                 "/actuator/**"
                         ).permitAll()
