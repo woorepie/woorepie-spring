@@ -90,6 +90,9 @@ public class Estate {
     @Column(nullable = false)
     private EstateStatus estateStatus = EstateStatus.READY;
 
+    @Column
+    private Boolean estateWoori = false;
+
     // 매물 정보 수정
     public Estate updateDescription(String newDescription) {
         this.estateDescription = newDescription;

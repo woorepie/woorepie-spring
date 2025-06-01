@@ -16,4 +16,9 @@ public class ApiResponseUtil {
         return ResponseEntity.status(status)
                 .body(ApiResponse.of(status.value(), message, request.getRequestURI(), data));
     }
+
+    public static <T> ResponseEntity<ApiResponse<T>> error(HttpStatus status, String message) {
+        return ResponseEntity.status(status)
+                .body(ApiResponse.of(status.value(), message, null, null));
+    }
 }
