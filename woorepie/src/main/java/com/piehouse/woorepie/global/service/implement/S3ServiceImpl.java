@@ -57,6 +57,7 @@ public class S3ServiceImpl implements S3Service {
                 .bucket(bucketName)
                 .key(objectKey)
                 .contentType(s3request.getFileType())
+                .acl("public-read") // ✅ 퍼블릭 읽기 권한 추가
                 .build();
 
         PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
@@ -95,6 +96,7 @@ public class S3ServiceImpl implements S3Service {
                             .bucket(bucketName)
                             .key(objectKey)
                             .contentType(contentType)
+                            .acl("public-read") // ✅ 퍼블릭 읽기 권한 추가
                             .build();
 
                     PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
@@ -138,6 +140,7 @@ public class S3ServiceImpl implements S3Service {
                             .bucket(bucketName)
                             .key(objectKey)
                             .contentType(contentType)
+                            .acl("public-read") // ✅ 퍼블릭 읽기 권한 추가
                             .build();
 
                     PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(p -> p
