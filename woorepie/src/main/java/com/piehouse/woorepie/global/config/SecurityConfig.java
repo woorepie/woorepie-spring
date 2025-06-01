@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/estate",
                                 "/estate/land-price",
                                 "/subscription",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/news/summarize"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"
