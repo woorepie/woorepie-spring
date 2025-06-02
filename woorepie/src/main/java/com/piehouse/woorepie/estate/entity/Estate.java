@@ -86,6 +86,9 @@ public class Estate {
     @Column(nullable = false)
     private BigDecimal tradedEstateArea;
 
+    @Column
+    private Integer estateSalePrice;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstateStatus estateStatus = EstateStatus.READY;

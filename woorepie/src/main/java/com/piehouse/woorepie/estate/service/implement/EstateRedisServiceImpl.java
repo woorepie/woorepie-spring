@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -88,18 +89,20 @@ public class EstateRedisServiceImpl implements EstateRedisService {
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
-        EstatePrice latest = estatePriceRepository
-                .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
-                .orElse(null);
+//        EstatePrice latest = estatePriceRepository
+//                .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
+//                .orElse(null);
+        Integer estateSalePrice = estate.getEstateSalePrice();
 
+        int tokenCount = estate.getTokenAmount();
+        int estatePrice = estateSalePrice != null ? estateSalePrice : 0;
+        int estateTokenPrice = tokenCount != 0 ? estatePrice / tokenCount : 0;
+
+        // 가장 최근 배당금
         BigDecimal dividendYield = dividendRepository
                 .findTopByEstate_EstateIdOrderByDividendDateDesc(estateId)
                 .map(Dividend::getDividendYield)
                 .orElse(null);
-
-        int tokenCount = estate.getTokenAmount();
-        int estatePrice = latest != null ? latest.getEstatePrice() : 0;
-        int estateTokenPrice = tokenCount != 0 ? estatePrice / tokenCount : 0;
 
         // Redis 저장 객체 생성
         RedisEstatePrice rep = RedisEstatePrice.builder()
@@ -110,7 +113,7 @@ public class EstateRedisServiceImpl implements EstateRedisService {
                 .build();
 
         // Redis 캐싱 후 반환
-        ops.set(key, rep);
+        ops.set(key, rep, 7, TimeUnit.DAYS);
         return rep;
 
     }

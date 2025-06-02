@@ -72,4 +72,13 @@ public class Customer {
         this.accountBalance = accountBalance;
     }
 
+    // 비밀번호 변경
+    public void updatePassword(String newPassword) {
+        this.customerPassword = newPassword;
+    }
+
+    public void plusAccountBalance(Integer price) {
+        this.accountBalance += price;
+    }
+
 }
