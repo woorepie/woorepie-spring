@@ -7,6 +7,7 @@ import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
+import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.trade.dto.request.RedisCustomerTradeValue;
 import com.piehouse.woorepie.trade.dto.request.RedisEstateTradeValue;
 import com.piehouse.woorepie.trade.repository.RedisTradeRepository;
@@ -31,6 +32,7 @@ public class TradeRedisServiceImpl implements TradeRedisService {
     private final EstateRepository estateRepository;
     private final CustomerRepository customerRepository;
     private final RedissonClient redissonClient;
+    private final NotificationService notificationService;
 
     // 매물과 고객 기준 매수 주문 동시 저장
     @Override

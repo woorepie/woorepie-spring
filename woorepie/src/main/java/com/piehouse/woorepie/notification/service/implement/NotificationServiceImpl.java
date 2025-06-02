@@ -2,7 +2,6 @@ package com.piehouse.woorepie.notification.service.implement;
 
 import com.piehouse.woorepie.customer.entity.Customer;
 import com.piehouse.woorepie.global.exception.CustomException;
-import com.piehouse.woorepie.global.sse.repository.SseEmitterRepository;
 import com.piehouse.woorepie.global.util.NotificationContentUtils;
 import com.piehouse.woorepie.notification.dto.response.NotificationResponse;
 import com.piehouse.woorepie.notification.entity.Notification;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +22,6 @@ import static com.piehouse.woorepie.global.exception.ErrorCode.NOTIFICATION_NON_
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
-    private final SseEmitterRepository emitterRepository;
 
     // 읽지 않은 알림 조회
     @Transactional(readOnly = true)
@@ -35,11 +32,10 @@ public class NotificationServiceImpl implements NotificationService {
                 .toList();
     }
 
-
     // 전체 알림 조회 (읽은/안읽은)
     @Transactional(readOnly = true)
     public List<NotificationResponse> getAllNotifications(Long customerId) {
-        return notificationRepository.findByCustomer_CustomerId(customerId)
+        return notificationRepository.findByCustomer_CustomerIdOrderByCreatedAtDesc(customerId)
                 .stream()
                 .map(NotificationResponse::from)
                 .toList();
@@ -53,51 +49,105 @@ public class NotificationServiceImpl implements NotificationService {
         notification.markAsRead();
     }
 
+    // 거래 체결(매수/매도) 알림 전송
     @Transactional
-    // 거래 체결 시 알림 생성 및 전송
     public void sendTradeNotification(
             Customer customer,
-            String assetName,
+            String estateName,
             int price,
             int tokenAmount,
             LocalDateTime tradeTime,
             boolean isBuy
     ) {
-        log.info("[알림 생성 시도] 고객 ID: {}, 매물명: {}", customer.getCustomerId(), assetName);
+        log.info("[알림 생성 시도] 고객 ID: {}, 매물명: {}", customer.getCustomerId(), estateName);
 
-        // 1. 알림 내용 생성
-        String content = NotificationContentUtils.createNotification(
-                customer.getCustomerName(),
-                assetName,
-                price,
-                tokenAmount,
-                tradeTime,
+        // 알림 제목/내용 생성
+        NotificationContentUtils.NotificationMessage message =
                 isBuy
-        );
+                        ? NotificationContentUtils.createBuyNotification(customer.getCustomerName(), estateName, price, tokenAmount, tradeTime)
+                        : NotificationContentUtils.createSellNotification(customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
 
-        log.debug("생성된 알림 내용: {}", content);
+        log.debug("생성된 알림 - title: {}, content: {}", message.title, message.content);
 
-        // 2. DB 저장
+        // DB 저장
         Notification notification = notificationRepository.save(
                 Notification.builder()
                         .customer(customer)
-                        .content(content)
+                        .title(message.title)
+                        .content(message.content)
                         .isRead(false)
                         .build()
         );
 
         log.info("[알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+    }
 
-        // 3. SSE 알림 전송
-        SseEmitter emitter = emitterRepository.get(customer.getCustomerId());
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("trade-notification")
-                        .data(NotificationResponse.from(notification)));
-            } catch (Exception e) {
-                emitterRepository.remove(customer.getCustomerId());
-            }
-        }
+    // 청약 성공 알림 전송
+    @Transactional
+    public void sendSubscriptionSuccessNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createSubscriptionSuccessNotification(
+                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
+    }
+
+    // 청약 실패(모집 미달) 알림 전송
+    @Transactional
+    public void sendSubscriptionFailLackNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createSubscriptionFailLackNotification(
+                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
+    }
+
+    // 청약 실패(선착순 마감) 알림 전송
+    @Transactional
+    public void sendSubscriptionFailSoldoutNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createSubscriptionFailSoldoutNotification(
+                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
     }
 }
