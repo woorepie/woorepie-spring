@@ -12,8 +12,6 @@ public interface KafkaConsumerService {
 
     void consumeSubscriptionFailure(CompleteEvent event);
 
-    void handleSubscriptionApproval(SubscriptionAcceptMessage message);
-
     void handleDividendApproval(DividendAcceptEvent message);
 
     void handleExitApproval(CompleteEvent message);

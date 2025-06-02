@@ -273,7 +273,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // 7. Kafka accept 이벤트 발송
         sendKafkaAcceptEvent(successSubs, estateId, tokenPrice);
 
-        // 8. 알림 전송
+        // 8. 실패자 환불 처리
+        for (Subscription failSub : failureSubs) {
+            refundSubscriptionFailure(failSub, tokenPrice);
+        }
+
+        // 9. 알림 전송
         sendSubscriptionSuccessNotifications(successSubs, estate, tokenPrice);
         sendSubscriptionFailNotifications(failureSubs, estate, tokenPrice);
     }
