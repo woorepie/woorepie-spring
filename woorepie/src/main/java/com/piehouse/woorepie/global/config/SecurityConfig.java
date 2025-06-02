@@ -44,9 +44,10 @@ public class SecurityConfig {
                                 "/s3-presigned-url/agent",
                                 "/estate",
                                 "/estate/land-price",
+                                "/estate/price/**",
                                 "/subscription",
                                 "/actuator/**",
-                                "/news/summarize"
+                                "/news/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"
