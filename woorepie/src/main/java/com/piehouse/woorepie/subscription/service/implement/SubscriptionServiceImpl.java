@@ -262,38 +262,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // 5. DB에 상태 일괄 저장
         subscriptionRepository.saveAll(pendingSubs);
 
-
-        // 6. 성공자에 대해 Kafka accept 이벤트 발송
+        // 6. 성공자 리스트 구하기
         List<Subscription> successSubs = pendingSubs.stream()
                 .filter(sub -> sub.getSubStatus() == SubStatus.SUCCESS)
                 .toList();
 
+        // 7. Kafka accept 이벤트 발송
         sendKafkaAcceptEvent(successSubs, estateId, tokenPrice);
 
-        // 7. 청약 성공자 알림 전송
-        for (Subscription successSub : successSubs) {
-            notificationService.sendSubscriptionSuccessNotification(
-                    successSub.getCustomer(),
-                    estate.getEstateName(),
-                    tokenPrice,
-                    successSub.getSubTokenAmount(),
-                    successSub.getSubDate()
-            );
-        }
-
-        // 8. 실패자 환불 처리 및 알림 전송
-        for (Subscription failSub : failureSubs) {
-            refundSubscriptionFailure(failSub, tokenPrice);
-
-            // 부분 실패/선착순 마감 실패자 알림 전송
-            notificationService.sendSubscriptionFailSoldoutNotification(
-                    failSub.getCustomer(),
-                    estate.getEstateName(),
-                    tokenPrice,
-                    failSub.getSubTokenAmount(),
-                    failSub.getSubDate()
-            );
-        }
+        // 8. 알림 전송
+        sendSubscriptionSuccessNotifications(successSubs, estate, tokenPrice);
+        sendSubscriptionFailNotifications(failureSubs, estate, tokenPrice);
     }
 
     // 성공자에 대해 Kafka accept 이벤트 개별 발송
@@ -328,21 +307,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         pendingSubs.forEach(sub -> sub.changeStatus(SubStatus.FAILURE));
         subscriptionRepository.saveAll(pendingSubs);
 
-        // 4. 일괄 환불 + 알림 전송
+        // 4. 일괄 환불 + 알림 전송(모집 미달)
         pendingSubs.forEach(sub -> {
             refundSubscriptionFailure(sub, tokenPrice);
-
-            // 모집 미달로 전체 실패자 알림 전송
-            notificationService.sendSubscriptionFailLackNotification(
-                    sub.getCustomer(),
-                    sub.getEstate().getEstateName(),
-                    tokenPrice,
-                    sub.getSubTokenAmount(),
-                    sub.getSubDate()
-            );
         });
+        sendSubscriptionLackNotifications(pendingSubs, tokenPrice);
         log.info("[청약 모집 실패] 환불 완료 : {}", pendingSubs.size());
     }
+
 
     // 환불 처리 메소드
     public void refundSubscriptionFailure(Subscription failSub, int tokenPrice) {
@@ -350,6 +322,45 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         int updatedRows = customerRepository.increaseBalance(failSub.getCustomer().getCustomerId(), refundAmount);
         if (updatedRows == 0) {
             throw new CustomException(ErrorCode.ACCOUNT_NON_EXIST);
+        }
+    }
+
+    // 청약 성공자 알림 전송
+    private void sendSubscriptionSuccessNotifications(List<Subscription> successSubs, Estate estate, int tokenPrice) {
+        for (Subscription sub : successSubs) {
+            notificationService.sendSubscriptionSuccessNotification(
+                    sub.getCustomer(),
+                    estate.getEstateName(),
+                    tokenPrice,
+                    sub.getSubTokenAmount(),
+                    sub.getSubDate()
+            );
+        }
+    }
+
+    // 청약 실패자(선착순 마감/부분실패) 알림 전송
+    private void sendSubscriptionFailNotifications(List<Subscription> failureSubs, Estate estate, int tokenPrice) {
+        for (Subscription sub : failureSubs) {
+            notificationService.sendSubscriptionFailSoldoutNotification(
+                    sub.getCustomer(),
+                    estate.getEstateName(),
+                    tokenPrice,
+                    sub.getSubTokenAmount(),
+                    sub.getSubDate()
+            );
+        }
+    }
+
+    // 청약 실패자(모집 미달) 알림 전송
+    private void sendSubscriptionLackNotifications(List<Subscription> failureSubs, int tokenPrice) {
+        for (Subscription sub : failureSubs) {
+            notificationService.sendSubscriptionFailLackNotification(
+                    sub.getCustomer(),
+                    sub.getEstate().getEstateName(),
+                    tokenPrice,
+                    sub.getSubTokenAmount(),
+                    sub.getSubDate()
+            );
         }
     }
 }
