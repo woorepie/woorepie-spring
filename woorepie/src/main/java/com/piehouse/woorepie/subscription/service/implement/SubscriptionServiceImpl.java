@@ -58,6 +58,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Agent agent = agentRepository.findById(agentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        boolean isWoori = agent.getAgentEmail().startsWith("woori");
+
         Estate estate = Estate.builder()
                 .agent(agent)
                 .estateName(request.getEstateName())
@@ -79,6 +81,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .estateRegistrationDate(LocalDateTime.now())
                 .tokenAmount(request.getTokenAmount())
                 .estateStatus(EstateStatus.READY)
+                .estateWoori(isWoori)
                 .build();
         estateRepository.save(estate);
 
