@@ -80,56 +80,6 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         subscriptionService.updateSubscriptionsOnFailure(event.getEstateId());
     }
 
-    @Override
-    @KafkaListener(topics = "subscription.accept")
-    @Transactional
-    public void handleSubscriptionApproval(SubscriptionAcceptMessage message) {
-        log.info("[Kafka] 청약 승인 수신");
-
-        Estate estate = estateRepository.findById(message.getEstateId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
-
-        message.getSubCustomer().forEach(subCustomer -> {
-
-            Customer customer = customerRepository.findById(subCustomer.getCustomerId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            Integer tokenPrice = subCustomer.getTokenPrice();
-            Integer tokenAmount = subCustomer.getTradeTokenAmount();
-
-            // 계좌 조회: 존재 시 update, 없으면 새로 생성
-            Optional<Account> optionalAccount = accountRepository.findByCustomerAndEstate(customer, estate);
-
-            if (optionalAccount.isPresent()) {
-                // 계좌 존재 시 업데이트
-                Account account = optionalAccount.get();
-
-                int newTokenAmount = account.getAccountTokenAmount() + tokenAmount;
-                account.updateTokenAmount(newTokenAmount);
-
-                int newTotalAmount = account.getTotalAccountAmount() + (tokenAmount * tokenPrice);
-                account.updateTotalAmount(newTotalAmount);
-
-                accountRepository.save(account);
-
-            } else {
-                // 계좌가 없으면 신규 생성
-                Account newAccount = Account.builder()
-                        .customer(customer)
-                        .estate(estate)
-                        .accountTokenAmount(tokenAmount)
-                        .totalAccountAmount(tokenAmount * tokenPrice)
-                        .build();
-                accountRepository.save(newAccount);
-            }
-        });
-
-        // 매물 상태 변경 → SUCCESS
-        estate.updateEstateStatusToSuccess();
-        estateRepository.save(estate);
-
-    }
-
     // 배당금 승인 로직
     @Override
     @KafkaListener(topics = "dividend.accept")

@@ -64,8 +64,8 @@ public class NotificationServiceImpl implements NotificationService {
         // 알림 제목/내용 생성
         NotificationContentUtils.NotificationMessage message =
                 isBuy
-                        ? NotificationContentUtils.createBuyNotification(customer.getCustomerName(), estateName, price, tokenAmount, tradeTime)
-                        : NotificationContentUtils.createSellNotification(customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+                        ? NotificationContentUtils.createBuyNotification(customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime)
+                        : NotificationContentUtils.createSellNotification(customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
         log.debug("생성된 알림 - title: {}, content: {}", message.title, message.content);
 
@@ -93,7 +93,7 @@ public class NotificationServiceImpl implements NotificationService {
     ) {
         NotificationContentUtils.NotificationMessage message =
                 NotificationContentUtils.createSubscriptionSuccessNotification(
-                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+                        customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
         Notification notification = notificationRepository.save(
                 Notification.builder()
@@ -116,7 +116,7 @@ public class NotificationServiceImpl implements NotificationService {
     ) {
         NotificationContentUtils.NotificationMessage message =
                 NotificationContentUtils.createSubscriptionFailLackNotification(
-                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+                        customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
         Notification notification = notificationRepository.save(
                 Notification.builder()
@@ -139,7 +139,7 @@ public class NotificationServiceImpl implements NotificationService {
     ) {
         NotificationContentUtils.NotificationMessage message =
                 NotificationContentUtils.createSubscriptionFailSoldoutNotification(
-                        customer.getCustomerName(), estateName, price, tokenAmount, tradeTime);
+                        customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
         Notification notification = notificationRepository.save(
                 Notification.builder()
