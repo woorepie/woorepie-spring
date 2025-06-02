@@ -10,25 +10,48 @@ import java.util.List;
 
 public interface NotificationService {
     // 읽지 않은 알림 조회
-    @Transactional(readOnly = true)
-    public List<NotificationResponse> getUnreadNotifications(Long customerId);
+    List<NotificationResponse> getUnreadNotifications(Long customerId);
 
     // 전체 알림 조회 (읽은/안읽은)
-    @Transactional(readOnly = true)
-    public List<NotificationResponse> getAllNotifications(Long customerId);
+    List<NotificationResponse> getAllNotifications(Long customerId);
 
     // 알림 읽음 처리
-    @Transactional
-    public void markAsRead(Long notificationId);
+    void markAsRead(Long notificationId);
 
-    @Transactional
-    // 거래 체결 시 알림 생성 및 전송
-    public void sendTradeNotification(
+    // 거래 체결(매수/매도) 알림 전송
+    void sendTradeNotification(
             Customer customer,
-            String assetName,
+            String estateName,
             int price,
             int tokenAmount,
             LocalDateTime tradeTime,
             boolean isBuy
+    );
+
+    // 청약 성공 알림 전송
+    void sendSubscriptionSuccessNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
+    );
+
+    // 청약 실패(모집 미달) 알림 전송
+    void sendSubscriptionFailLackNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
+    );
+
+    // 청약 실패(선착순 마감) 알림 전송
+    void sendSubscriptionFailSoldoutNotification(
+            Customer customer,
+            String estateName,
+            int price,
+            int tokenAmount,
+            LocalDateTime tradeTime
     );
 }
