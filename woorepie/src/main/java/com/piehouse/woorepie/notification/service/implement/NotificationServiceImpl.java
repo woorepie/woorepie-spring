@@ -35,7 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     // 전체 알림 조회 (읽은/안읽은)
     @Transactional(readOnly = true)
     public List<NotificationResponse> getAllNotifications(Long customerId) {
-        return notificationRepository.findByCustomer_CustomerId(customerId)
+        return notificationRepository.findByCustomer_CustomerIdOrderByCreatedAtDesc(customerId)
                 .stream()
                 .map(NotificationResponse::from)
                 .toList();

@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByCustomer_CustomerIdAndIsReadFalse(Long customerId);
-    List<Notification> findByCustomer_CustomerId(Long customerId);
+    List<Notification> findByCustomer_CustomerIdOrderByCreatedAtDesc(Long customerId);
 }
