@@ -69,7 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.debug("생성된 알림 - title: {}, content: {}", message.title, message.content);
 
-        // ✨ DB 저장
+        // DB 저장
         Notification notification = notificationRepository.save(
                 Notification.builder()
                         .customer(customer)
