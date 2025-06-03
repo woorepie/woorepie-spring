@@ -101,13 +101,4 @@ public class Estate {
         this.estateDescription = newDescription;
         return this;
     }
-
-    public void updateEstateStatusToSuccess() {
-        this.estateStatus = EstateStatus.SUCCESS;
-    }
-
-    public void updateEstateStatusToExit() {
-        this.estateStatus = EstateStatus.EXIT;
-    }
-
 }

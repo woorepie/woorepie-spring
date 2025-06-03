@@ -140,7 +140,6 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
         // 2. 상태 EXIT 변경
-        estate.updateEstateStatusToExit();
         estateRepository.save(estate);
 
         // 3. 최근 시세 조회
