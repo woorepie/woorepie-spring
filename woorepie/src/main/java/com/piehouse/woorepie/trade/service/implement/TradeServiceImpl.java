@@ -60,6 +60,11 @@ public class TradeServiceImpl implements TradeService {
     @Override
     @Transactional
     public Trade saveTrade(Estate estate, Customer seller, Customer buyer, int tradeTokenAmount, int tokenPrice) {
+        Customer persistedSeller = customerRepository.findById(seller.getCustomerId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        Customer persistedBuyer = customerRepository.findById(buyer.getCustomerId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // PostgreSQL 저장
         LocalDateTime tradeTime = LocalDateTime.now();
@@ -100,7 +105,7 @@ public class TradeServiceImpl implements TradeService {
                 .updateTotalAmount(newTotalAmount);
 
         // 판매자 계좌 잔액 증가
-        seller.increaseAccountBalance(tradeAmount);
+        persistedSeller.increaseAccountBalance(tradeAmount);
 
         // 5. 구매자 계좌 업데이트
         Account buyerAccount = accountRepository.findByCustomerAndEstate(buyer, estate)
@@ -120,7 +125,7 @@ public class TradeServiceImpl implements TradeService {
                 .updateTotalAmount(buyerAccount.getTotalAccountAmount() + tradeAmount);
 
         // 구매자 계좌 잔액 차감
-        buyer.decreaseAccountBalance(tradeAmount);
+        persistedBuyer.decreaseAccountBalance(tradeAmount);
 
         return savedTrade;
 

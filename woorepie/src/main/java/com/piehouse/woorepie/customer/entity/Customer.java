@@ -69,10 +69,6 @@ public class Customer {
         this.customerPassword = newPassword;
     }
 
-    public void plusAccountBalance(Integer price) {
-        this.accountBalance += price;
-    }
-
     // 계좌 잔액 증가
     public void increaseAccountBalance(int amount) {
         this.accountBalance += amount;
