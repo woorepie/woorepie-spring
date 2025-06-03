@@ -115,6 +115,17 @@ public class CustomerController {
         List<GetCustomerTradeResponse> getCustomerTradeResponseList = customerService.getCustomerTrade(session.getCustomerId());
         return ApiResponseUtil.success(getCustomerTradeResponseList, request);
     }
+    
+    //전화번호 중복 조회
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/check-phone")
+    public ResponseEntity<ApiResponse<Boolean>> checkPhone(@RequestParam String phoneNumber, HttpServletRequest request) {
+        log.info("Check customer phone number request");
+        Boolean check = customerService.checkCustomerPhoneNumber(phoneNumber);
+        return ApiResponseUtil.success(check, request);
+    }
+
+
 
 }
 

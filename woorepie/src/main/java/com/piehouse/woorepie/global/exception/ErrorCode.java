@@ -35,9 +35,11 @@ public enum ErrorCode {
     // 409: 리소스 충돌
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
     ACCOUNT_NUMBER_DUPLICATED(HttpStatus.CONFLICT, "계좌번호 생성 실패: 중복 발생"),
+    ALREADY_REGISTERED_PHONE(HttpStatus.CONFLICT, "이미 존재하는 전화번호입니다."),
 
     // 500: 서버 에러
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;

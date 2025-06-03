@@ -34,4 +34,7 @@ public interface CustomerService {
 
     List<GetCustomerTradeResponse> getCustomerTrade(Long customerId);
 
+    Boolean checkCustomerPhoneNumber(String customerPhoneNumber);
+
+
 }

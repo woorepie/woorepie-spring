@@ -76,6 +76,14 @@ public class AgentController {
         List<AgentEstateListResponse> estateList = agentService.getEstatesByAgent(agentId);
         return ApiResponseUtil.success(estateList, request);
     }
+    
+    //대행인 전화번호 중복 확인
+    @GetMapping("/check-phone")
+    public ResponseEntity<ApiResponse<Boolean>> checkAgentPhone(@RequestParam String phoneNumber, HttpServletRequest request) {
+        agentService.checkAgentPhoneNumber(phoneNumber); // 중복이면 예외 발생
+        return ApiResponseUtil.success(true, request);   // 사용 가능하면 true 반환
+    }
+
 
 
 }
