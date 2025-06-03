@@ -8,11 +8,13 @@ import com.piehouse.woorepie.agent.dto.response.GetAgentResponse;
 import com.piehouse.woorepie.agent.entity.Agent;
 import com.piehouse.woorepie.agent.repository.AgentRepository;
 import com.piehouse.woorepie.agent.service.AgentService;
+import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
+import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -43,6 +46,7 @@ public class AgentServiceImpl implements AgentService {
     private final DividendRepository dividendRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3ServiceImpl s3Service;
+    private final EstateRedisService estateRedisService;
 
     @Override
     @Transactional(readOnly = true)
@@ -152,20 +156,33 @@ public class AgentServiceImpl implements AgentService {
     @Override
     @Transactional(readOnly = true)
     public List<AgentEstateListResponse> getEstatesByAgent(Long agentId) {
-        // 수정 전
-        // List<Estate> estateList = estateRepository.findByAgentId(agentId);
-
-        // ✅ 수정 후
+        // 1. DB에서 estate 목록 조회
         List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
 
+        // 2. estateId만 추출
+        List<Long> estateIds = estateList.stream()
+                .map(Estate::getEstateId)
+                .toList();
+
+        // 3. Redis에서 가격 정보 한꺼번에 조회
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
+
+        // 4. 응답 매핑
         return estateList.stream()
                 .map(e -> {
-                    Integer estateTokenPrice = estatePriceRepository
+                    RedisEstatePrice redisPrice = estatePriceMap.get(e.getEstateId());
+
+                    // Redis 기준
+                    int estateTokenPriceFromRedis = redisPrice != null ? redisPrice.getEstateTokenPrice() : 0;
+                    BigDecimal dividendFromRedis = redisPrice != null ? redisPrice.getDividendYield() : BigDecimal.ZERO;
+
+                    // DB 기준
+                    Integer latestTokenPriceFromDb = estatePriceRepository
                             .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(e.getEstateId())
                             .map(EstatePrice::getEstatePrice)
                             .orElse(null);
 
-                    BigDecimal dividendYield = dividendRepository
+                    BigDecimal latestDividendFromDb = dividendRepository
                             .findTopByEstate_EstateIdOrderByDividendDateDesc(e.getEstateId())
                             .map(d -> d.getDividendYield())
                             .orElse(null);
@@ -174,13 +191,14 @@ public class AgentServiceImpl implements AgentService {
                             .estateId(e.getEstateId())
                             .estateName(e.getEstateName())
                             .tokenAmount(e.getTokenAmount())
-                            .estateTokenPrice(estateTokenPrice)
-                            .dividendYield(dividendYield)
+                            .estateTokenPrice(latestTokenPriceFromDb != null ? latestTokenPriceFromDb : estateTokenPriceFromRedis)
+                            .dividendYield(latestDividendFromDb != null ? latestDividendFromDb : dividendFromRedis)
                             .estateStatus(e.getEstateStatus().name())
                             .build();
                 })
                 .toList();
     }
+
 
     //전화번호 중복 확인
     @Override
