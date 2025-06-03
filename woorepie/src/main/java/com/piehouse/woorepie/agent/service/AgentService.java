@@ -22,4 +22,6 @@ public interface AgentService {
 
     List<AgentEstateListResponse> getEstatesByAgent(Long agentId);
 
+    Boolean checkAgentPhoneNumber(String phoneNumber);
+
 }

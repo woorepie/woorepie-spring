@@ -121,6 +121,17 @@ public class CustomerServiceImpl implements CustomerService {
         return true;
 
     }
+    
+    //전화번호 중복 확인
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean checkCustomerPhoneNumber(String customerPhoneNumber) {
+        if (customerRepository.existsByCustomerPhoneNumber(customerPhoneNumber)) {
+            throw new CustomException(ErrorCode.ALREADY_REGISTERED_PHONE);
+        }
+        return true;
+    }
+
 
     @Override
     public void modifyCustomerPassword(Long customerId, ModifyPassword passwordRequest) {
