@@ -156,49 +156,41 @@ public class AgentServiceImpl implements AgentService {
     @Override
     @Transactional(readOnly = true)
     public List<AgentEstateListResponse> getEstatesByAgent(Long agentId) {
-        // 1. DB에서 estate 목록 조회
+        // 1. DB에서 agent의 estate 목록 조회
         List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
 
-        // 2. estateId만 추출
+        // 2. estateId만 리스트로 추출
         List<Long> estateIds = estateList.stream()
                 .map(Estate::getEstateId)
                 .toList();
+        // 수정 전
+        // List<Estate> estateList = estateRepository.findByAgentId(agentId);
 
-        // 3. Redis에서 가격 정보 한꺼번에 조회
+        // 3. Redis에서 estateId 리스트로 가격 정보 한꺼번에 조회
         Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
-        // 4. 응답 매핑
+        // ✅ 수정 후
+        // List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
+
+        // 4. estateList를 돌면서 각 estate에 price를 할당해서 응답 생성
         return estateList.stream()
                 .map(e -> {
-                    RedisEstatePrice redisPrice = estatePriceMap.get(e.getEstateId());
+                    RedisEstatePrice price = estatePriceMap.get(e.getEstateId());
+                    int estateTokenPrice = price != null ? price.getEstateTokenPrice() : 0; // int로 바로 할당
+                    BigDecimal dividend = price != null ? price.getDividendYield() : BigDecimal.ZERO; // int로 바로 할당
 
-                    // Redis 기준
-                    int estateTokenPriceFromRedis = redisPrice != null ? redisPrice.getEstateTokenPrice() : 0;
-                    BigDecimal dividendFromRedis = redisPrice != null ? redisPrice.getDividendYield() : BigDecimal.ZERO;
-
-                    // DB 기준
-                    Integer latestTokenPriceFromDb = estatePriceRepository
-                            .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(e.getEstateId())
-                            .map(EstatePrice::getEstatePrice)
-                            .orElse(null);
-
-                    BigDecimal latestDividendFromDb = dividendRepository
-                            .findTopByEstate_EstateIdOrderByDividendDateDesc(e.getEstateId())
-                            .map(d -> d.getDividendYield())
-                            .orElse(null);
-
+                    assert price != null;
                     return AgentEstateListResponse.builder()
                             .estateId(e.getEstateId())
                             .estateName(e.getEstateName())
                             .tokenAmount(e.getTokenAmount())
-                            .estateTokenPrice(latestTokenPriceFromDb != null ? latestTokenPriceFromDb : estateTokenPriceFromRedis)
-                            .dividendYield(latestDividendFromDb != null ? latestDividendFromDb : dividendFromRedis)
+                            .estateTokenPrice(estateTokenPrice)
+                            .dividendYield(dividend)
                             .estateStatus(e.getEstateStatus().name())
                             .build();
                 })
                 .toList();
     }
-
 
     //전화번호 중복 확인
     @Override
