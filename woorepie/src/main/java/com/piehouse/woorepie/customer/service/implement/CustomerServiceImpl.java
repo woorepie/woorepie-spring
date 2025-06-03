@@ -254,7 +254,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        customer.plusAccountBalance(price);
+        customer.increaseAccountBalance(price);
         customerRepository.save(customer);
         
     }
