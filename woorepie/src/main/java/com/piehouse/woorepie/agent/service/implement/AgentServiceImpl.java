@@ -163,14 +163,8 @@ public class AgentServiceImpl implements AgentService {
         List<Long> estateIds = estateList.stream()
                 .map(Estate::getEstateId)
                 .toList();
-        // 수정 전
-        // List<Estate> estateList = estateRepository.findByAgentId(agentId);
-
         // 3. Redis에서 estateId 리스트로 가격 정보 한꺼번에 조회
         Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
-
-        // ✅ 수정 후
-        // List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
 
         // 4. estateList를 돌면서 각 estate에 price를 할당해서 응답 생성
         return estateList.stream()
@@ -201,4 +195,5 @@ public class AgentServiceImpl implements AgentService {
         }
         return true;
     }
+
 }

@@ -28,6 +28,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("UPDATE Customer c SET c.accountBalance = c.accountBalance + :amount WHERE c.customerId = :customerId")
     int increaseBalance(@Param("customerId") Long customerId, @Param("amount") int amount);
 
-
-
 }
