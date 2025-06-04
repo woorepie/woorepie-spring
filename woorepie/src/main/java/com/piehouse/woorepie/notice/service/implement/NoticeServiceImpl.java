@@ -24,25 +24,6 @@ import java.util.stream.Collectors;
 public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
-    private final EstateRepository estateRepository;
-
-    @Override
-    @Transactional
-    public void create(CreateNoticeRequest request, Long agentId) {
-
-        Estate estate = estateRepository.findById(request.getEstateId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
-
-        Notice notice = Notice.builder()
-                .estate(estate)
-                .noticeTitle(request.getNoticeTitle())
-                .noticeContent(request.getNoticeContent())
-                .noticeFileUrl(request.getNoticeFileUrl())
-                .noticeDate(LocalDateTime.now())
-                .build();
-        noticeRepository.save(notice);
-
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -80,21 +61,6 @@ public class NoticeServiceImpl implements NoticeService {
                 .noticeFileUrl(notice.getNoticeFileUrl())
                 .noticeDate(notice.getNoticeDate())
                 .build();
-
-    }
-
-    @Override
-    @Transactional
-    public void modifyNotice(Long noticeId, ModifyNoticeRequest request, Long agentId) {
-
-        Notice notice = noticeRepository.findById(noticeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        notice.updateNotice(
-                request.getNoticeTitle(),
-                request.getNoticeContent(),
-                request.getNoticeFileUrl()
-        );
 
     }
 
