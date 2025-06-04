@@ -25,15 +25,6 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
-    // 공시 등록 (중개인 로그인 필요)
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<String>> createNotice(@Valid @RequestBody CreateNoticeRequest request,
-                                                            @AuthenticationPrincipal SessionAgent sessionAgent,
-                                                            HttpServletRequest httpRequest) {
-        noticeService.create(request, sessionAgent.getAgentId());
-        return ApiResponseUtil.of(HttpStatus.CREATED, "공시 등록 성공", null, httpRequest);
-    }
-
     // 공시 리스트 조회
     @GetMapping
     public ResponseEntity<ApiResponse<List<GetNoticeSimpleResponse>>> getNotices(HttpServletRequest request) {
@@ -51,15 +42,4 @@ public class NoticeController {
         return ApiResponseUtil.success(dto, request);
     }
 
-    // 공시 수정 (중개인 로그인 필요)
-    @PatchMapping("/modify")
-    public ResponseEntity<ApiResponse<String>> modifyNotice(
-            @RequestParam("noticeId") Long noticeId,
-            @Valid @RequestBody ModifyNoticeRequest request,
-            @AuthenticationPrincipal SessionAgent sessionAgent,
-            HttpServletRequest httpRequest
-    ) {
-        noticeService.modifyNotice(noticeId, request, sessionAgent.getAgentId());
-        return ApiResponseUtil.success("공시 수정 성공", httpRequest);
-    }
 }
