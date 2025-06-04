@@ -7,6 +7,7 @@ import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.entity.Dividend;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
@@ -139,33 +140,31 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
-        // 2. 상태 EXIT 변경
+        estate.updateSubState(EstateStatus.EXIT);
         estateRepository.save(estate);
 
-        // 3. 최근 시세 조회
-        EstatePrice latestPrice = estatePriceRepository
-                .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+        int estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
 
-        int estatePrice = latestPrice.getEstatePrice();
-
-        // 4. 계좌 조회
+        // 3. 계좌 조회
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
             int tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
-            int refundAmount = tokenAmount * estatePrice;
+            int refundAmount = tokenAmount * estateTokenPrice;
 
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
 
             // 토큰 소멸 처리
-            account.updateTokenAmount(0);
+//            account.updateTokenAmount(0);
+
+            accountRepository.delete(account);
         }
 
         log.info("매각 환불 및 상태 처리 완료");
     }
+
 
 }
