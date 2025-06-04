@@ -49,7 +49,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.markAsRead();
     }
 
-    // 거래 체결(매수/매도) 알림 전송
+    // 거래 체결(매수/매도) 알림
     @Transactional
     public void sendTradeNotification(
             Customer customer,
@@ -82,7 +82,7 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("[알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
     }
 
-    // 청약 성공 알림 전송
+    // 청약 성공 알림
     @Transactional
     public void sendSubscriptionSuccessNotification(
             Customer customer,
@@ -105,7 +105,7 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 
-    // 청약 실패(모집 미달) 알림 전송
+    // 청약 실패(모집 미달) 알림
     @Transactional
     public void sendSubscriptionFailLackNotification(
             Customer customer,
@@ -128,7 +128,7 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 
-    // 청약 실패(선착순 마감) 알림 전송
+    // 청약 실패(선착순 마감) 알림
     @Transactional
     public void sendSubscriptionFailSoldoutNotification(
             Customer customer,
@@ -149,5 +149,31 @@ public class NotificationServiceImpl implements NotificationService {
                         .isRead(false)
                         .build()
         );
+    }
+
+    // 매각 환불 알림
+    @Transactional
+    public void sendSellRefundNotification(
+            Customer customer,
+            String estateName,
+            int refundAmount,
+            int tokenAmount,
+            LocalDateTime refundTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createSellRefundNotification(
+                        customer.getCustomerName(), estateName, refundAmount, tokenAmount, refundTime
+                );
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
+
+        log.info("[매각 환불 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
     }
 }

@@ -7,9 +7,7 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.entity.EstateStatus;
-import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.estate.service.implement.EstateRedisServiceImpl;
@@ -281,6 +279,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // 9. 알림 전송
         sendSubscriptionSuccessNotifications(successSubs, estate, tokenPrice);
         sendSubscriptionFailNotifications(failureSubs, estate, tokenPrice);
+
+        // 10. 매물 상태 변경 및 저장
+        estate.updateSubState(EstateStatus.SUCCESS);
+        estateRepository.save(estate);
     }
 
     // 성공자에 대해 Kafka accept 이벤트 개별 발송
@@ -321,6 +323,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         });
         sendSubscriptionLackNotifications(pendingSubs, tokenPrice);
         log.info("[청약 모집 실패] 환불 완료 : {}", pendingSubs.size());
+
+        // 5. 매물 상태 변경 및 저장
+        Estate estate = estateRepository.findById(estateId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 매물을 찾을 수 없습니다. id=" + estateId));
+
+        estate.updateSubState(EstateStatus.FAILURE);
+        estateRepository.save(estate);
     }
 
 

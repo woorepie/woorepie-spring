@@ -101,4 +101,11 @@ public class Estate {
         this.estateDescription = newDescription;
         return this;
     }
+
+    // 매물 상태 수정
+    public Estate updateSubState(EstateStatus newEstateStatus) {
+        this.estateStatus = newEstateStatus;
+        return this;
+    }
+
 }
