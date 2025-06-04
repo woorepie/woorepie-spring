@@ -6,7 +6,6 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.entity.Dividend;
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
@@ -16,6 +15,7 @@ import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaConsumerService;
+import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.subscription.service.SubscriptionService;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
 import com.piehouse.woorepie.trade.service.TradeService;
@@ -27,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -44,6 +44,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     private final DividendRepository dividendRepository;
     private final EstatePriceRepository estatePriceRepository;
     private final CustomerRepository customerRepository;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -157,9 +158,15 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
 
-            // 토큰 소멸 처리
-//            account.updateTokenAmount(0);
+            notificationService.sendSellRefundNotification(
+                    customer,
+                    estate.getEstateName(),
+                    refundAmount,
+                    tokenAmount,
+                    LocalDateTime.now()
+            );
 
+            // 토큰 소멸 처리
             accountRepository.delete(account);
         }
 

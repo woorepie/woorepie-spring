@@ -18,7 +18,7 @@ public interface NotificationService {
     // 알림 읽음 처리
     void markAsRead(Long notificationId);
 
-    // 거래 체결(매수/매도) 알림 전송
+    // 거래 체결(매수/매도) 알림
     void sendTradeNotification(
             Customer customer,
             String estateName,
@@ -28,7 +28,7 @@ public interface NotificationService {
             boolean isBuy
     );
 
-    // 청약 성공 알림 전송
+    // 청약 성공 알림
     void sendSubscriptionSuccessNotification(
             Customer customer,
             String estateName,
@@ -37,7 +37,7 @@ public interface NotificationService {
             LocalDateTime tradeTime
     );
 
-    // 청약 실패(모집 미달) 알림 전송
+    // 청약 실패(모집 미달) 알림
     void sendSubscriptionFailLackNotification(
             Customer customer,
             String estateName,
@@ -46,12 +46,21 @@ public interface NotificationService {
             LocalDateTime tradeTime
     );
 
-    // 청약 실패(선착순 마감) 알림 전송
+    // 청약 실패(선착순 마감) 알림
     void sendSubscriptionFailSoldoutNotification(
             Customer customer,
             String estateName,
             int price,
             int tokenAmount,
             LocalDateTime tradeTime
+    );
+
+    // 매각 알림
+    void sendSellRefundNotification(
+            Customer customer,
+            String estateName,
+            int refundAmount,
+            int tokenAmount,
+            LocalDateTime refundTime
     );
 }

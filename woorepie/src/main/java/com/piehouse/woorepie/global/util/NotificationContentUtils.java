@@ -87,6 +87,22 @@ public class NotificationContentUtils {
         return new NotificationMessage(title, content);
     }
 
+    // 매각 환불
+    public static NotificationMessage createSellRefundNotification(
+            String customerName,
+            String estateName,
+            int refundAmount,
+            int tokenAmount,
+            LocalDateTime refundTime
+    ) {
+        String title = "[Woorepie] 매각 환불 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물의 매각에 따라 보유하셨던 토큰 금액이 환불 처리되었습니다.\n\n- 매물명: %s\n- 환불 금액: %,d원\n- 환불 수량: %d 토큰\n- 환불 일시: %s\n\n감사합니다.",
+                customerName, estateName, refundAmount, tokenAmount, refundTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
     // 알림 제목/내용 한 번에 리턴하는 내부 클래스
     public static class NotificationMessage {
         public final String title;
