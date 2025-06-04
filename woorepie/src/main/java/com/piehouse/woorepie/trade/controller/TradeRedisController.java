@@ -53,10 +53,7 @@ public class TradeRedisController { // Redis 동작 테스트용 Controller
 
     // 고객 기준 매수 주문 전체 조회
     @GetMapping("/customer/buy")
-    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerBuyOrders(
-            @AuthenticationPrincipal SessionCustomer sessionCustomer,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerBuyOrders(@AuthenticationPrincipal SessionCustomer sessionCustomer, HttpServletRequest request) {
         Long customerId = sessionCustomer.getCustomerId();
         log.info("✅ [RedisController] customerId = {}", customerId);
 
@@ -67,7 +64,8 @@ public class TradeRedisController { // Redis 동작 테스트용 Controller
 
     // 고객 기준 매도 주문 전체 조회
     @GetMapping("/customer/sell")
-    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerSellOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerSellOrders(@AuthenticationPrincipal SessionCustomer sessionCustomer, HttpServletRequest request) {
+        Long customerId = sessionCustomer.getCustomerId();
         List<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerSellOrders(customerId);
         return ApiResponseUtil.success(orders, request);
     }
