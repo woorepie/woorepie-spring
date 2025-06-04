@@ -128,6 +128,25 @@ class SubscriptionServiceImplTest {
     }
 
     /**
+     * [경계 케이스] 청약 매물 리스트 - 데이터 없음(empty)
+     * - DB에 청약 가능한 매물이 0건일 때 정상적으로 빈 리스트가 반환되는지 검증
+     */
+    @Test
+    @DisplayName("청약 매물 리스트 - 데이터 없음(empty)")
+    void getActiveSubscriptions_empty() {
+        // given: 조회 결과가 아예 없는 상황
+        given(estateRepository.findByEstateStatusIn(anyList())).willReturn(List.of());
+        given(estateRedisServiceImpl.getMultipleRedisEstatePrice(anyList())).willReturn(Map.of());
+
+        // when
+        List<GetSubscriptionSimpleResponse> result = subscriptionService.getActiveSubscriptions();
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+    }
+
+    /**
      * [정상 케이스] 청약 매물 상세정보 조회
      */
     @Test
