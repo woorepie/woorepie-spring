@@ -36,10 +36,10 @@ public class Trade {
     private Customer buyer;
 
     @Column(nullable = false)
-    private Integer tokenPrice;
+    private Long tokenPrice;
 
     @Column(nullable = false)
-    private Integer tradeTokenAmount;
+    private Long tradeTokenAmount;
 
     @CreationTimestamp
     @Column(updatable = false)

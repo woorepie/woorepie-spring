@@ -170,11 +170,11 @@ class CustomerServiceImplTest {
     @DisplayName("계좌 잔액 충전 성공")
     void plusCustomerAccountBalance_shouldIncreaseBalance() {
         Long id = 1L;
-        Customer customer = Customer.builder().customerId(id).accountBalance(0).build();
+        Customer customer = Customer.builder().customerId(id).accountBalance(0L).build();
 
         when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
 
-        customerService.plusCustomerAccountBalance(id, 1000);
+        customerService.plusCustomerAccountBalance(id, 1000L);
 
         assertEquals(1000, customer.getAccountBalance());
         verify(customerRepository).save(customer);
@@ -191,7 +191,7 @@ class CustomerServiceImplTest {
                 .customerPhoneNumber("01012345678")
                 .accountNumber("123-456")
                 .customerAddress("서울")
-                .accountBalance(1000)
+                .accountBalance(1000L)
                 .build();
 
         Estate estate = Estate.builder()
@@ -200,14 +200,14 @@ class CustomerServiceImplTest {
                 .build();
 
         Account account = Account.builder()
-                .accountTokenAmount(10)
+                .accountTokenAmount(10L)
                 .customer(customer)
                 .estate(estate) // estate 반드시 세팅!
                 .build();
 
         RedisEstatePrice redisEstatePrice = RedisEstatePrice.builder()
-                .estateTokenPrice(100)
-                .estatePrice(1000000)
+                .estateTokenPrice(100L)
+                .estatePrice(1000000L)
                 .build();
 
         when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
@@ -237,8 +237,8 @@ class CustomerServiceImplTest {
 
         // RedisEstatePrice도 같이 넣어줘야 함
         RedisEstatePrice redisEstatePrice = RedisEstatePrice.builder()
-                .estateTokenPrice(100)
-                .estatePrice(1000000)
+                .estateTokenPrice(100L)
+                .estatePrice(1000000L)
                 .build();
 
         when(subscriptionRepository.findByCustomerIdWithEstate(id)).thenReturn(List.of(sub));
@@ -263,13 +263,13 @@ class CustomerServiceImplTest {
         Trade trade = Trade.builder()
                 .tradeId(1L)
                 .estate(estate)
-                .tradeTokenAmount(10)
+                .tradeTokenAmount(10L)
                 .tradeDate(LocalDateTime.now())
                 .build();
 
         RedisEstatePrice redisEstatePrice = RedisEstatePrice.builder()
-                .estateTokenPrice(100)
-                .estatePrice(1000000)
+                .estateTokenPrice(100L)
+                .estatePrice(1000000L)
                 .build();
 
         when(tradeRepository.findBySellerIdWithEstate(id)).thenReturn(List.of(trade));
@@ -300,14 +300,14 @@ class CustomerServiceImplTest {
 
         Account account = Account.builder()
                 .accountId(1L)
-                .accountTokenAmount(10)
+                .accountTokenAmount(10L)
                 .customer(customer)
                 .estate(estate)
                 .build();
 
         RedisEstatePrice redisEstatePrice = RedisEstatePrice.builder()
-                .estateTokenPrice(100)
-                .estatePrice(1000000)
+                .estateTokenPrice(100L)
+                .estatePrice(1000000L)
                 .build();
 
         when(accountRepository.findByCustomerIdWithEstate(customerId)).thenReturn(List.of(account));

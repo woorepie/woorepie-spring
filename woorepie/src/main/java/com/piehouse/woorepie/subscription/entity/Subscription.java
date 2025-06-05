@@ -33,7 +33,7 @@ public class Subscription {
     private Customer customer;
 
     @Column(nullable = false)
-    private Integer subTokenAmount;
+    private Long subTokenAmount;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -49,7 +49,7 @@ public class Subscription {
     }
 
     // 토큰 수량 업데이트 메소드 추가
-    public void changeSubTokenAmount(int newAmount) {
+    public void changeSubTokenAmount(long newAmount) {
         this.subTokenAmount = newAmount;
     }
 

@@ -22,7 +22,7 @@ public class RegisterEstateRequest {
     private String estateCity;
 
     @NotBlank(message = "estatePrice 필수입니다.")
-    private Integer estatePrice;
+    private Long estatePrice;
 
     @NotBlank(message = "estateAddress 필수입니다.")
     private String estateAddress;
@@ -34,7 +34,7 @@ public class RegisterEstateRequest {
     private String estateLongitude;
 
     @NotBlank(message = "tokenAmount 필수입니다.")
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
     @NotBlank(message = "totalEstateArea 필수입니다.")
     private BigDecimal totalEstateArea;

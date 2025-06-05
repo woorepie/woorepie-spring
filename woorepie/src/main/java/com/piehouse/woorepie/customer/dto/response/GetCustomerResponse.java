@@ -21,9 +21,9 @@ public class GetCustomerResponse {
 
     private String accountNumber;
 
-    private Integer accountBalance;
+    private Long accountBalance;
 
-    private Integer totalAccountTokenPrice;
+    private Long totalAccountTokenPrice;
 
     private LocalDateTime customerJoinDate;
 

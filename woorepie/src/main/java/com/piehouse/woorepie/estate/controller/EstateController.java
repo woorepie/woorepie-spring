@@ -65,7 +65,7 @@ public class EstateController {
      * 실시간 공시 조회
      */
     @GetMapping("/land-price")
-    public ResponseEntity<ApiResponse<Integer>> getLandPrice(
+    public ResponseEntity<ApiResponse<Long>> getLandPrice(
             @RequestParam Double lat,
             @RequestParam Double lng,
             HttpServletRequest request
@@ -141,7 +141,7 @@ public class EstateController {
                 return ApiResponseUtil.error(HttpStatus.NOT_FOUND, "공시지가 정보가 없습니다.");
             }
 
-            int landPrice = Integer.parseInt(priceList.item(0).getTextContent());
+            long landPrice = Long.parseLong(priceList.item(0).getTextContent());
             return ApiResponseUtil.success(landPrice, request);
 
         } catch (Exception e) {

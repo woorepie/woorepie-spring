@@ -26,7 +26,7 @@ public interface CustomerService {
 
     GetCustomerResponse getCustomer(Long customerId);
 
-    void plusCustomerAccountBalance(Long customerId, Integer price);
+    void plusCustomerAccountBalance(Long customerId, Long price);
 
     List<GetCustomerAccountResponse> getCustomerAccount(Long customerId);
 

@@ -10,16 +10,16 @@ public interface EstateRedisService {
     void initializeRemainingTokens(Long estateId);
 
     // 남은 토큰 수량 Reids에 저장 (STRING)
-    void setRemainingTokens(String estateId, int remainingTokens);
+    void setRemainingTokens(String estateId, long remainingTokens);
 
     // 남은 토큰 수량 Redis에서 조회
-    int getRemainingTokens(String estateId);
+    long getRemainingTokens(String estateId);
 
     // 토큰 수량 감소 (원자적 연산)
-    Long decrementTokens(String estateId, int amount);
+    Long decrementTokens(String estateId, long amount);
 
     // 토큰 수량 증가 (원자적 연산)
-    Long incrementTokens(String estateId, int amount);
+    Long incrementTokens(String estateId, long amount);
 
     // 매물 시세 조회
     RedisEstatePrice getRedisEstatePrice(Long estateId);

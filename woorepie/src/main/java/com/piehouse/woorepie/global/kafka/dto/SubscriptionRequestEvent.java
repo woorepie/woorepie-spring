@@ -18,9 +18,9 @@ public class SubscriptionRequestEvent {
 
     private Long estateId;
 
-    private Integer tokenPrice;
+    private Long tokenPrice;
 
-    private Integer amount;
+    private Long amount;
 
     private LocalDateTime subscribeDate;
 

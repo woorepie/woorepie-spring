@@ -227,8 +227,8 @@ public class CustomerServiceImpl implements CustomerService {
         Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         //토큰 보유액 계산
-        int totalAccountTokenPrice = accounts.stream()
-                .mapToInt(account -> {
+        long totalAccountTokenPrice = accounts.stream()
+                .mapToLong(account -> {
                     RedisEstatePrice price = estatePriceMap.get(account.getEstate().getEstateId());
                     return account.getAccountTokenAmount() * price.getEstateTokenPrice();
                 })
@@ -249,7 +249,7 @@ public class CustomerServiceImpl implements CustomerService {
     // 계좌 잔액 충전
     @Override
     @Transactional
-    public void plusCustomerAccountBalance(Long customerId, Integer price) {
+    public void plusCustomerAccountBalance(Long customerId, Long price) {
 
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));

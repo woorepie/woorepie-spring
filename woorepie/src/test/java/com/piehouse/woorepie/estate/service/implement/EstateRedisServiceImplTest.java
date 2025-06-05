@@ -55,7 +55,7 @@ class EstateRedisServiceImplTest {
     @DisplayName("initializeRemainingTokens - DB에서 토큰 개수 읽고 Redis에 저장")
     void initializeRemainingTokens_success() {
         Long estateId = 123L;
-        Integer tokenAmount = 100;
+        Long tokenAmount = 100L;
 
         when(estateRepository.findTokenAmountByEstateId(estateId)).thenReturn(Optional.of(tokenAmount));
         doNothing().when(mockStringOps).set(anyString(), eq(tokenAmount.toString()));
@@ -88,14 +88,14 @@ class EstateRedisServiceImplTest {
     @DisplayName("setRemainingTokens/getRemainingTokens - 남은 토큰 수 저장/조회")
     void setAndGetRemainingTokens_success() {
         String estateId = "456";
-        int remain = 77;
+        long remain = 77;
 
         doNothing().when(mockStringOps).set(anyString(), eq(String.valueOf(remain)));
         when(mockStringOps.get(anyString())).thenReturn(String.valueOf(remain));
 
         estateRedisService.setRemainingTokens(estateId, remain);
 
-        int actual = estateRedisService.getRemainingTokens(estateId);
+        long actual = estateRedisService.getRemainingTokens(estateId);
         assertThat(actual).isEqualTo(remain);
 
         verify(mockStringOps).set(contains(estateId), eq(String.valueOf(remain)));
@@ -134,8 +134,8 @@ class EstateRedisServiceImplTest {
         // 캐시 미스
         when(mockObjectOps.get(key)).thenReturn(null);
         when(estateRepository.findById(estateId)).thenReturn(Optional.of(estate));
-        when(estate.getEstateSalePrice()).thenReturn(10000);
-        when(estate.getTokenAmount()).thenReturn(100);
+        when(estate.getEstateSalePrice()).thenReturn(10000L);
+        when(estate.getTokenAmount()).thenReturn(100L);
         when(dividendRepository.findTopByEstate_EstateIdOrderByDividendDateDesc(estateId)).thenReturn(Optional.empty());
 
         // mock set
@@ -161,9 +161,9 @@ class EstateRedisServiceImplTest {
         Long estateId = 2L;
         String key = "estate:price:" + estateId;
         RedisEstatePrice price = RedisEstatePrice.builder()
-                .estatePrice(11111)
-                .estateTokenPrice(222)
-                .tokenAmount(333)
+                .estatePrice(11111L)
+                .estateTokenPrice(222L)
+                .tokenAmount(333L)
                 .dividendYield(BigDecimal.TEN)
                 .build();
 
@@ -185,15 +185,15 @@ class EstateRedisServiceImplTest {
         Long id1 = 10L, id2 = 20L;
         String key1 = "estate:price:" + id1;
         String key2 = "estate:price:" + id2;
-        RedisEstatePrice cached = RedisEstatePrice.builder().estatePrice(100).build();
+        RedisEstatePrice cached = RedisEstatePrice.builder().estatePrice(100L).build();
 
         // 첫 번째는 캐시 hit, 두 번째는 miss
         when(mockObjectOps.multiGet(List.of(key1, key2))).thenReturn(List.of(cached, null));
         when(mockObjectOps.get(key2)).thenReturn(null); // 두번째 miss
         Estate estate = mock(Estate.class);
         when(estateRepository.findById(id2)).thenReturn(Optional.of(estate));
-        when(estate.getEstateSalePrice()).thenReturn(200);
-        when(estate.getTokenAmount()).thenReturn(2);
+        when(estate.getEstateSalePrice()).thenReturn(200L);
+        when(estate.getTokenAmount()).thenReturn(2L);
         when(dividendRepository.findTopByEstate_EstateIdOrderByDividendDateDesc(id2)).thenReturn(Optional.empty());
         doNothing().when(mockObjectOps).set(anyString(), any(RedisEstatePrice.class), anyLong(), any(TimeUnit.class));
 

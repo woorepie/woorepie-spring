@@ -16,7 +16,7 @@ public class TransactionCreatedEvent {
     private Long tradeId;
     private Long sellerId;
     private Long buyerId;
-    private Integer tokenPrice;
-    private Integer tradeTokenAmount;
+    private Long tokenPrice;
+    private Long tradeTokenAmount;
     private LocalDateTime tradeDate;
 }

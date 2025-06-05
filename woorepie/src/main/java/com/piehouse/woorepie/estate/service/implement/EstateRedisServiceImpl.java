@@ -41,7 +41,7 @@ public class EstateRedisServiceImpl implements EstateRedisService {
     @Transactional(readOnly = true)
     public void initializeRemainingTokens(Long estateId) {
         // 1. DB에서 tokenAmount 조회
-        Integer tokenAmount = estateRepository.findTokenAmountByEstateId(estateId)
+        Long tokenAmount = estateRepository.findTokenAmountByEstateId(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
         // 2. Redis에 저장 (초기화)
@@ -50,26 +50,26 @@ public class EstateRedisServiceImpl implements EstateRedisService {
     }
 
     // 남은 토큰 수량 Reids에 저장 (STRING)
-    public void setRemainingTokens(String estateId, int remainingTokens) {
+    public void setRemainingTokens(String estateId, long remainingTokens) {
         String key = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
         redisStringTemplate.opsForValue().set(key, String.valueOf(remainingTokens));
     }
 
     // 남은 토큰 수량 Redis에서 조회
-    public int getRemainingTokens(String estateId) {
+    public long getRemainingTokens(String estateId) {
         String key = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
         String value = redisStringTemplate.opsForValue().get(key);
-        return value != null ? Integer.parseInt(value) : 0;
+        return value != null ? Long.parseLong(value) : 0L;
     }
 
     // 토큰 수량 감소 (원자적 연산)
-    public Long decrementTokens(String estateId, int amount) {
+    public Long decrementTokens(String estateId, long amount) {
         String key = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
         return redisStringTemplate.opsForValue().decrement(key, amount);
     }
 
     // 토큰 수량 증가 (원자적 연산)
-    public Long incrementTokens(String estateId, int amount) {
+    public Long incrementTokens(String estateId, long amount) {
         String key = String.format(REMAINING_TOKENS_KEY_FORMAT, estateId);
         return redisStringTemplate.opsForValue().increment(key, amount);
     }
@@ -92,11 +92,11 @@ public class EstateRedisServiceImpl implements EstateRedisService {
 //        EstatePrice latest = estatePriceRepository
 //                .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
 //                .orElse(null);
-        Integer estateSalePrice = estate.getEstateSalePrice();
+        Long estateSalePrice = estate.getEstateSalePrice();
 
-        int tokenCount = estate.getTokenAmount();
-        int estatePrice = estateSalePrice != null ? estateSalePrice : 0;
-        int estateTokenPrice = tokenCount != 0 ? estatePrice / tokenCount : 0;
+        long tokenCount = estate.getTokenAmount();
+        long estatePrice = estateSalePrice != null ? estateSalePrice : 0;
+        long estateTokenPrice = tokenCount != 0 ? estatePrice / tokenCount : 0;
 
         // 가장 최근 배당금
         BigDecimal dividendYield = dividendRepository

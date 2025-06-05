@@ -14,9 +14,9 @@ public class RedisCustomerTradeValue {
 
     private Long estateId;
 
-    private int tradeTokenAmount ;
+    private long tradeTokenAmount ;
 
-    private int tokenPrice;
+    private long tokenPrice;
 
     private long timestamp;
 

@@ -170,7 +170,7 @@ public class AgentServiceImpl implements AgentService {
         return estateList.stream()
                 .map(e -> {
                     RedisEstatePrice price = estatePriceMap.get(e.getEstateId());
-                    int estateTokenPrice = price != null ? price.getEstateTokenPrice() : 0; // int로 바로 할당
+                    long estateTokenPrice = price != null ? price.getEstateTokenPrice() : 0; // int로 바로 할당
                     BigDecimal dividend = price != null ? price.getDividendYield() : BigDecimal.ZERO; // int로 바로 할당
 
                     assert price != null;

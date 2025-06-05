@@ -18,9 +18,9 @@ public class GetCustomerSubscriptionResponse {
 
     private String estateName;
 
-    private Integer subTokenAmount;
+    private Long subTokenAmount;
 
-    private Integer subTokenPrice;
+    private Long subTokenPrice;
 
     private LocalDateTime subDate;
 

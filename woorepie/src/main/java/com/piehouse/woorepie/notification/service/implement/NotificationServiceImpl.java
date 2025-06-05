@@ -54,8 +54,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendTradeNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime,
             boolean isBuy
     ) {
@@ -87,8 +87,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendSubscriptionSuccessNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -110,8 +110,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendSubscriptionFailLackNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -133,8 +133,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendSubscriptionFailSoldoutNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -156,8 +156,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendSellRefundNotification(
             Customer customer,
             String estateName,
-            int refundAmount,
-            int tokenAmount,
+            long refundAmount,
+            long tokenAmount,
             LocalDateTime refundTime
     ) {
         NotificationContentUtils.NotificationMessage message =

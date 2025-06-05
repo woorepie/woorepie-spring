@@ -26,7 +26,7 @@ public class EstatePrice {
     private Estate estate;
 
     @Column(nullable = false)
-    private Integer estatePrice;
+    private Long estatePrice;
 
     @CreationTimestamp
     @Column(updatable = false)

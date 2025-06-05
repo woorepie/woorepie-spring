@@ -28,19 +28,19 @@ public class Account {
     private Estate estate;
 
     @Column(nullable = false)
-    private Integer accountTokenAmount;
+    private Long accountTokenAmount;
 
     @Column(nullable = false)
-    private Integer totalAccountAmount;
+    private Long totalAccountAmount;
 
     // 계좌 토큰 수량 업데이트 메소드
-    public Account updateTokenAmount(int newTokenAmount) {
+    public Account updateTokenAmount(long newTokenAmount) {
         this.accountTokenAmount = newTokenAmount;
         return this;
     }
 
     // 계좌 총액 업데이트 메소드
-    public Account updateTotalAmount(int newTotalAmount) {
+    public Account updateTotalAmount(long newTotalAmount) {
         this.totalAccountAmount = newTotalAmount;
         return this;
     }

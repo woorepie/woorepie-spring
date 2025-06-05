@@ -115,7 +115,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
             // 배당금 = 보유 수량 * 배당률
@@ -123,7 +123,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                     .setScale(0, RoundingMode.DOWN) // 소수점 절삭
                     .intValue();
 
-            int updatedBalance = customer.getAccountBalance() + dividendAmount;
+            long updatedBalance = customer.getAccountBalance() + dividendAmount;
             customer.setAccountBalance(updatedBalance);
         }
 
@@ -144,16 +144,16 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         estate.updateSubState(EstateStatus.EXIT);
         estateRepository.save(estate);
 
-        int estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
+        long estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
 
         // 3. 계좌 조회
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
-            int refundAmount = tokenAmount * estateTokenPrice;
+            long refundAmount = tokenAmount * estateTokenPrice;
 
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
