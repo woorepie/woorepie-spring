@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/estate/price/**",
                                 "/subscription",
                                 "/actuator/**",
-                                "/news/**"
+                                "/news/**",
+                                "/notice/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"
