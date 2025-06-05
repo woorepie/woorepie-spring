@@ -32,22 +32,34 @@ public class OpenaiServiceImpl implements OpenaiService {
         try {
             // 메시지 구성
             String userContent = String.format("""
-            넌 부동산 투자 유치를 위한 마케팅용 AI야. 부동산에 대해 긍정적인 내용만 요약해. 주변 개발 계획이나 인프라 등 긍정적인 요소 위주로, 호재 중심 뉴스만 제공해줘.
-
-            - 부동산 이름: %s
+            넌 부동산 투자 유치를 위한 마케팅용 AI야. 아래 부동산에 대해 투자 유치용으로 사용할 요약 정보를 **총 3개 항목**으로 작성해줘.
+            
+            각 항목은 아래 형식을 따를 것:
+            1. 세 줄 요약 (각 줄은 "-"로 시작)
+            2. 관련 뉴스 URL (실제 URL이 없으면 "뉴스 URL 없음"이라도 작성)
+            3. 판단 근거 (주변 개발 계획, 인프라 등 긍정적인 요소만 포함)
+        
+            입력 부동산 정보:
+            - 이름: %s
             - 주소: %s
             - 위도: %f
             - 경도: %f
-
-            결과는 다음 형식으로 작성해:
-            1. 세 줄 요약
-            2. 호재 여부 (항상 '예'라고 써)
-            3. 판단 근거 (긍정적인 내용만 포함)
+        
+            형식 예시:
+            ---
+            1. **우레피 스마트 오피스텔**
+               - 주변 개발 호재가 많음
+               - 지하철 접근성 우수
+               - 랜드마크로 주목받는 중
+            2. https://news.example.com/article123
+            3. 우레피 스마트 오피스텔은 강남구 중심지에 위치하며...
+        
+            이런 형식으로 **총 3개** 작성해줘.
         """, name, address, lat, lng);
 
             // JSON 구성
             JsonNode rootNode = mapper.createObjectNode()
-                    .put("model", "gpt-3.5-turbo")
+                    .put("model", "gpt-4")
                     .put("temperature", 0.7);
 
             JsonNode messagesNode = mapper.createArrayNode()
