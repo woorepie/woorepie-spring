@@ -57,7 +57,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Agent agent = agentRepository.findById(agentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        boolean isWoori = agent.getAgentEmail().startsWith("woori");
+        boolean isWoori = agent.getAgentEmail().equals("woori@woori.com");
 
         Estate estate = Estate.builder()
                 .agent(agent)
@@ -70,7 +70,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .totalEstateArea(request.getTotalEstateArea())
                 .tradedEstateArea(request.getTradeEstateArea())
                 .estateUseZone(request.getEstateUseZone())
-                .estateSalePrice(request.getEstatePrice())
                 .estateDescription(request.getEstateDescription())
                 .estateSalePrice(request.getEstatePrice())
                 .estateImageUrl(s3serviceImpl.getPublicS3Url(request.getEstateImageUrlKey()))
