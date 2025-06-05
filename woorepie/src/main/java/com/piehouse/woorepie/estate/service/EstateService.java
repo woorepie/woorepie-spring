@@ -20,5 +20,4 @@ public interface EstateService {
 
     // 매물 수정
     void modifyEstateDescription(Long agentId, ModifyEstateRequest request);
-
 }

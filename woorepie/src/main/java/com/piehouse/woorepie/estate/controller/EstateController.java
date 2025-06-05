@@ -2,6 +2,7 @@ package com.piehouse.woorepie.estate.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.piehouse.woorepie.estate.dto.response.GetEstateDetailsResponse;
+import com.piehouse.woorepie.estate.dto.response.GetEstatePriceResponse;
 import com.piehouse.woorepie.estate.dto.response.GetEstateSimpleResponse;
 import com.piehouse.woorepie.estate.service.EstateService;
 import com.piehouse.woorepie.global.response.ApiResponse;
@@ -60,6 +61,9 @@ public class EstateController {
     @Value("${vworld.api.key}")  // application.yml에 키 추가 필요
     private String vWorldApiKey;
 
+    /**
+     * 실시간 공시 조회
+     */
     @GetMapping("/land-price")
     public ResponseEntity<ApiResponse<Integer>> getLandPrice(
             @RequestParam Double lat,
@@ -144,4 +148,14 @@ public class EstateController {
             log.error("공시지가 조회 실패", e);
             return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR, "공시지가 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
-    }}
+    }
+
+    /**
+     * 매물 시세 조회
+     */
+    @GetMapping("/price")
+    public ResponseEntity<ApiResponse<List<GetEstatePriceResponse>>> getEstatePrice(@RequestParam Long estateId, HttpServletRequest request) {
+        List<GetEstatePriceResponse> response = estateService.getEstatePriceHistory(estateId);
+        return ApiResponseUtil.success(response, request);
+    }
+}
