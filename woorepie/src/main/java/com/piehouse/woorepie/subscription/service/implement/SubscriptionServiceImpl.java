@@ -57,7 +57,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Agent agent = agentRepository.findById(agentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        boolean isWoori = agent.getAgentEmail().startsWith("woori");
+        boolean isWoori = agent.getAgentEmail().equals("woori@woori.com");
 
         Estate estate = Estate.builder()
                 .agent(agent)
