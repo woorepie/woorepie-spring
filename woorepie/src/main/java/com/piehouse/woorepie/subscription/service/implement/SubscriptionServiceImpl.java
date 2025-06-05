@@ -70,7 +70,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .totalEstateArea(request.getTotalEstateArea())
                 .tradedEstateArea(request.getTradeEstateArea())
                 .estateUseZone(request.getEstateUseZone())
-                .estateSalePrice(request.getEstatePrice())
                 .estateDescription(request.getEstateDescription())
                 .estateSalePrice(request.getEstatePrice())
                 .estateImageUrl(s3serviceImpl.getPublicS3Url(request.getEstateImageUrlKey()))
