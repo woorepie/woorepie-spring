@@ -35,11 +35,11 @@ public class GetEstateDetailsResponse {
 
     private String estateImageUrl;
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
     private BigDecimal dividendYield;
 

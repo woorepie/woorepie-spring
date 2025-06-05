@@ -17,9 +17,9 @@ public class GetCustomerTradeResponse {
 
     private String estateName;
 
-    private Integer tradeTokenAmount;
+    private Long tradeTokenAmount;
 
-    private Integer tradeTokenPrice;
+    private Long tradeTokenPrice;
 
     private LocalDateTime tradeDate;
 

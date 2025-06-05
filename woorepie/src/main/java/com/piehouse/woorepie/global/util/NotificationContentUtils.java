@@ -11,8 +11,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSellNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 매도 체결 안내";
@@ -27,8 +27,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createBuyNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 매수 체결 안내";
@@ -43,8 +43,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionSuccessNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 체결 안내";
@@ -59,8 +59,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionFailLackNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 미체결 안내";
@@ -75,8 +75,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionFailSoldoutNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 미체결 안내";
@@ -91,8 +91,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSellRefundNotification(
             String customerName,
             String estateName,
-            int refundAmount,
-            int tokenAmount,
+            long refundAmount,
+            long tokenAmount,
             LocalDateTime refundTime
     ) {
         String title = "[Woorepie] 매각 환불 안내";

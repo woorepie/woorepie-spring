@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 @Builder
 public class RedisEstatePrice {
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
     private BigDecimal dividendYield;
 

@@ -72,6 +72,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .estateUseZone(request.getEstateUseZone())
                 .estateSalePrice(request.getEstatePrice())
                 .estateDescription(request.getEstateDescription())
+                .estateSalePrice(request.getEstatePrice())
                 .estateImageUrl(s3serviceImpl.getPublicS3Url(request.getEstateImageUrlKey()))
                 .subGuideUrl(s3serviceImpl.getPublicS3Url(request.getSubGuideUrlKey()))
                 .securitiesReportUrl(s3serviceImpl.getPublicS3Url(request.getSecuritiesReportUrlKey()))
@@ -145,7 +146,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         RedisEstatePrice price = estateRedisServiceImpl.getRedisEstatePrice(estateId);
 
-        int subTokenAmount = estate.getTokenAmount();
+        long subTokenAmount = estate.getTokenAmount();
 
         return GetSubscriptionDetailsResponse.builder()
                 .estateId(estate.getEstateId())
@@ -194,9 +195,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // Redis에서 1토큰당 가격 조회
         RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
-        int tokenPrice = redisPrice.getEstateTokenPrice();
+        long tokenPrice = redisPrice.getEstateTokenPrice();
 
-        int availableToken = estate.getTokenAmount();
+        long availableToken = estate.getTokenAmount();
 
         int allocated = 0;
         Subscription partialFailureRow = null; // 부분 성공자(일부 성공, 일부 실패)
@@ -204,15 +205,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // 3. 선착순 배정 및 성공/실패/부분실패 처리
         for (Subscription sub : pendingSubs) {
-            int remain = availableToken - allocated;
-            int reqAmount = sub.getSubTokenAmount();
+            long remain = availableToken - allocated;
+            long reqAmount = sub.getSubTokenAmount();
 
             if (remain <= 0) { // 전부 실패
                 sub.changeStatus(SubStatus.FAILURE);
                 failureSubs.add(sub);
                 continue;
             }
-            int successAmount;
+            long successAmount;
             if (reqAmount <= remain) { // 전부 성공
                 sub.changeStatus(SubStatus.SUCCESS);
                 allocated += reqAmount;
@@ -286,7 +287,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     // 성공자에 대해 Kafka accept 이벤트 개별 발송
-    private void sendKafkaAcceptEvent(List<Subscription> successSubs, Long estateId, int tokenPrice) {
+    private void sendKafkaAcceptEvent(List<Subscription> successSubs, Long estateId, long tokenPrice) {
         if (successSubs.isEmpty()) return;
 
         for (Subscription sub : successSubs) {
@@ -311,7 +312,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // 2. 토큰당 가격 조회
         RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
-        int tokenPrice = redisPrice.getEstateTokenPrice();
+        long tokenPrice = redisPrice.getEstateTokenPrice();
 
         // 3. 모두 FAILURE 처리 + 일괄 저장
         pendingSubs.forEach(sub -> sub.changeStatus(SubStatus.FAILURE));
@@ -334,16 +335,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 
     // 환불 처리 메소드
-    public void refundSubscriptionFailure(Subscription failSub, int tokenPrice) {
-        int refundAmount = failSub.getSubTokenAmount() * tokenPrice;
-        int updatedRows = customerRepository.increaseBalance(failSub.getCustomer().getCustomerId(), refundAmount);
+    public void refundSubscriptionFailure(Subscription failSub, long tokenPrice) {
+        long refundAmount = failSub.getSubTokenAmount() * tokenPrice;
+        long updatedRows = customerRepository.increaseBalance(failSub.getCustomer().getCustomerId(), refundAmount);
         if (updatedRows == 0) {
             throw new CustomException(ErrorCode.ACCOUNT_NON_EXIST);
         }
     }
 
     // 청약 성공자 알림 전송
-    private void sendSubscriptionSuccessNotifications(List<Subscription> successSubs, Estate estate, int tokenPrice) {
+    private void sendSubscriptionSuccessNotifications(List<Subscription> successSubs, Estate estate, long tokenPrice) {
         for (Subscription sub : successSubs) {
             notificationService.sendSubscriptionSuccessNotification(
                     sub.getCustomer(),
@@ -356,7 +357,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     // 청약 실패자(선착순 마감/부분실패) 알림 전송
-    private void sendSubscriptionFailNotifications(List<Subscription> failureSubs, Estate estate, int tokenPrice) {
+    private void sendSubscriptionFailNotifications(List<Subscription> failureSubs, Estate estate, long tokenPrice) {
         for (Subscription sub : failureSubs) {
             notificationService.sendSubscriptionFailSoldoutNotification(
                     sub.getCustomer(),
@@ -369,7 +370,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     // 청약 실패자(모집 미달) 알림 전송
-    private void sendSubscriptionLackNotifications(List<Subscription> failureSubs, int tokenPrice) {
+    private void sendSubscriptionLackNotifications(List<Subscription> failureSubs, long tokenPrice) {
         for (Subscription sub : failureSubs) {
             notificationService.sendSubscriptionFailLackNotification(
                     sub.getCustomer(),
