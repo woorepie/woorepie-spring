@@ -119,6 +119,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             .estateName(estate.getEstateName())
                             .agentId(estate.getAgent().getAgentId())
                             .agentName(estate.getAgent().getAgentName())
+                            .businessName(estate.getAgent().getBusinessName())
                             .subStartDate(estate.getSubStartDate())
                             .subEndDate(estate.getSubEndDate())
                             .estateState(estate.getEstateState())

@@ -21,6 +21,8 @@ public class GetSubscriptionSimpleResponse {
 
     private String agentName;
 
+    private String businessName;
+
     private LocalDateTime subStartDate;
 
     private LocalDateTime subEndDate;
