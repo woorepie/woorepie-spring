@@ -101,7 +101,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public List<GetSubscriptionSimpleResponse> getActiveSubscriptions() {
 
         List<Estate> estates = estateRepository.findByEstateStatusIn(List.of(
-                EstateStatus.READY, EstateStatus.RUNNING, EstateStatus.PENDING, EstateStatus.FAILURE
+                EstateStatus.RUNNING, EstateStatus.SUCCESS, EstateStatus.FAILURE, EstateStatus.EXIT
         )); // 청약 중인 substate 필터링
 
         List<Long> estateIds = estates.stream()
@@ -109,7 +109,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .toList();
 
         Map<Long, RedisEstatePrice> estatePriceMap = estateRedisServiceImpl.getMultipleRedisEstatePrice(estateIds);
-
 
         return estates.stream()
                 .map(estate -> {
@@ -120,6 +119,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             .estateName(estate.getEstateName())
                             .agentId(estate.getAgent().getAgentId())
                             .agentName(estate.getAgent().getAgentName())
+                            .businessName(estate.getAgent().getBusinessName())
                             .subStartDate(estate.getSubStartDate())
                             .subEndDate(estate.getSubEndDate())
                             .estateState(estate.getEstateState())
