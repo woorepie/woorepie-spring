@@ -46,7 +46,7 @@ public class Estate {
     private String estateLongitude;
 
     @Column(nullable = false)
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
     @Column(columnDefinition = "TEXT")
     private String estateDescription;
@@ -86,11 +86,16 @@ public class Estate {
     @Column(nullable = false)
     private BigDecimal tradedEstateArea;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Long estateSalePrice = 0L;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstateStatus estateStatus = EstateStatus.READY;
 
     @Column
+    @Builder.Default
     private Boolean estateWoori = false;
 
     // 매물 정보 수정
@@ -99,12 +104,10 @@ public class Estate {
         return this;
     }
 
-    public void updateEstateStatusToSuccess() {
-        this.estateStatus = EstateStatus.SUCCESS;
-    }
-
-    public void updateEstateStatusToExit() {
-        this.estateStatus = EstateStatus.EXIT;
+    // 매물 상태 수정
+    public Estate updateSubState(EstateStatus newEstateStatus) {
+        this.estateStatus = newEstateStatus;
+        return this;
     }
 
 }

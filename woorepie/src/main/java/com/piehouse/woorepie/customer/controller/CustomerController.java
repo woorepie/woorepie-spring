@@ -2,6 +2,8 @@ package com.piehouse.woorepie.customer.controller;
 
 import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
+import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
+import com.piehouse.woorepie.customer.dto.request.PlusAccountBalance;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -20,7 +22,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -54,6 +55,16 @@ public class CustomerController {
         return ApiResponseUtil.success(check, request);
     }
 
+    // 비밀번호 변경(로그인 상태)
+    @PostMapping("/modify/password")
+    public ResponseEntity<ApiResponse<Void>> login(@AuthenticationPrincipal SessionCustomer session,
+                                                   @Valid @RequestBody ModifyPassword requestDto,
+                                                   HttpServletRequest request) {
+        log.info("update customer password request");
+        customerService.modifyCustomerPassword(session.getCustomerId(), requestDto);
+        return ApiResponseUtil.success(null, request);
+    }
+
     // 회원 가입
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createCustomer(@Valid @RequestBody CreateCustomerRequest requestDto, HttpServletRequest request) {
@@ -78,6 +89,17 @@ public class CustomerController {
         return ApiResponseUtil.success(getCustomerAccountResponseList, request);
     }
 
+
+    // 계좌 잔액 충전
+    @PostMapping("/account/balance")
+    public ResponseEntity<ApiResponse<Void>> plusCustomerAccountBalance(@AuthenticationPrincipal SessionCustomer session,
+                                                                        @RequestBody PlusAccountBalance requestPrice,
+                                                                        HttpServletRequest request) {
+        log.info("Plus customer account balance request");
+        customerService.plusCustomerAccountBalance(session.getCustomerId(), requestPrice.getPrice());
+        return ApiResponseUtil.success(null, request);
+    }
+
     // 마이페이지 청약 내역 조회
     @GetMapping("/subscription")
     public ResponseEntity<ApiResponse<List<GetCustomerSubscriptionResponse>>> getCustomerSubscription(@AuthenticationPrincipal SessionCustomer session, HttpServletRequest request) {
@@ -92,6 +114,15 @@ public class CustomerController {
         log.info("Get customer trade request");
         List<GetCustomerTradeResponse> getCustomerTradeResponseList = customerService.getCustomerTrade(session.getCustomerId());
         return ApiResponseUtil.success(getCustomerTradeResponseList, request);
+    }
+    
+    //전화번호 중복 조회
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/check-phone")
+    public ResponseEntity<ApiResponse<Boolean>> checkPhone(@RequestParam String phoneNumber, HttpServletRequest request) {
+        log.info("Check customer phone number request");
+        Boolean check = customerService.checkCustomerPhoneNumber(phoneNumber);
+        return ApiResponseUtil.success(check, request);
     }
 
 }

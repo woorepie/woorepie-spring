@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 public class AgentEstateListResponse {
     private Long estateId;
     private String estateName;
-    private Integer tokenAmount;
-    private Integer estateTokenPrice;
+    private Long tokenAmount;
+    private Long estateTokenPrice;
     private BigDecimal dividendYield;
     private String estateStatus;
 }

@@ -36,10 +36,12 @@ public class SecurityConfig {
                                 "/customer/login",
                                 "/customer/create",
                                 "/customer/check-email",
+                                "/customer/check-phone",
                                 "/sms/**",
                                 "/agent/create",
                                 "/agent/login",
                                 "/agent/check-email",
+                                "/agent/check-phone",
                                 "/s3-presigned-url/customer",
                                 "/s3-presigned-url/agent",
                                 "/estate",
@@ -47,7 +49,8 @@ public class SecurityConfig {
                                 "/estate/price/**",
                                 "/subscription",
                                 "/actuator/**",
-                                "/news/**"
+                                "/news/**",
+                                "/notice/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/customer/**"

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class GetEstatePriceResponse {
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
     private LocalDateTime estatePriceDate;
 

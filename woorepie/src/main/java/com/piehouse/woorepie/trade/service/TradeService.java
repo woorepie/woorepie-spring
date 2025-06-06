@@ -9,7 +9,7 @@ import com.piehouse.woorepie.trade.entity.Trade;
 
 public interface TradeService {
     // 거래 저장
-    Trade saveTrade(Estate estate, Customer seller, Customer buyer, int tradeTokenAmount, int tokenPrice);
+    Trade saveTrade(Estate estate, Customer seller, Customer buyer, long tradeTokenAmount, long tokenPrice);
 
     void buy(BuyEstateRequest request, Long customerId);
 
@@ -17,5 +17,5 @@ public interface TradeService {
 
     void createSubscription(CreateSubscriptionTradeRequest request, Long customerId);
 
-    void processSubscriptionRequest(Long estateId, Long customerId, int requestedAmount, int tokenPrice);
+    void processSubscriptionRequest(Long estateId, Long customerId, long requestedAmount, long tokenPrice);
 }

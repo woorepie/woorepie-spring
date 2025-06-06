@@ -1,12 +1,16 @@
 package com.piehouse.woorepie.trade.controller;
 
+import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.global.response.ApiResponse;
 import com.piehouse.woorepie.global.response.ApiResponseUtil;
 import com.piehouse.woorepie.trade.dto.request.*;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/redis")
 @RequiredArgsConstructor
+@Log4j2
 public class TradeRedisController { // Redis 동작 테스트용 Controller
 
     private final TradeRedisService tradeRedisService;
@@ -48,14 +53,19 @@ public class TradeRedisController { // Redis 동작 테스트용 Controller
 
     // 고객 기준 매수 주문 전체 조회
     @GetMapping("/customer/buy")
-    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerBuyOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerBuyOrders(@AuthenticationPrincipal SessionCustomer sessionCustomer, HttpServletRequest request) {
+        Long customerId = sessionCustomer.getCustomerId();
+        log.info("✅ [RedisController] customerId = {}", customerId);
+
         List<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerBuyOrders(customerId);
         return ApiResponseUtil.success(orders, request);
     }
 
+
     // 고객 기준 매도 주문 전체 조회
     @GetMapping("/customer/sell")
-    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerSellOrders(@RequestHeader("customerId") Long customerId, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<RedisCustomerTradeValue>>> getCustomerSellOrders(@AuthenticationPrincipal SessionCustomer sessionCustomer, HttpServletRequest request) {
+        Long customerId = sessionCustomer.getCustomerId();
         List<RedisCustomerTradeValue> orders = tradeRedisService.getCustomerSellOrders(customerId);
         return ApiResponseUtil.success(orders, request);
     }

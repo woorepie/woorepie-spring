@@ -7,6 +7,7 @@ import com.piehouse.woorepie.estate.repository.EstateRepository;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.OrderCreatedEvent;
+import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.trade.dto.request.RedisCustomerTradeValue;
 import com.piehouse.woorepie.trade.dto.request.RedisEstateTradeValue;
 import com.piehouse.woorepie.trade.repository.RedisTradeRepository;
@@ -31,10 +32,11 @@ public class TradeRedisServiceImpl implements TradeRedisService {
     private final EstateRepository estateRepository;
     private final CustomerRepository customerRepository;
     private final RedissonClient redissonClient;
+    private final NotificationService notificationService;
 
     // 매물과 고객 기준 매수 주문 동시 저장
     @Override
-    public void saveBuyOrder(Long estateId, Long customerId, int tokenAmount, int tokenPrice) {
+    public void saveBuyOrder(Long estateId, Long customerId, long tokenAmount, long tokenPrice) {
         long timestamp = System.currentTimeMillis();
         RedisEstateTradeValue estateOrder = new RedisEstateTradeValue(customerId, tokenAmount, tokenPrice, timestamp);
         RedisCustomerTradeValue customerOrder = new RedisCustomerTradeValue(estateId, tokenAmount, tokenPrice, timestamp);
@@ -45,7 +47,7 @@ public class TradeRedisServiceImpl implements TradeRedisService {
 
     // 매물과 고객 기준 매도 주문 동시 저장
     @Override
-    public void saveSellOrder(Long estateId, Long customerId, int tokenAmount, int tokenPrice) {
+    public void saveSellOrder(Long estateId, Long customerId, long tokenAmount, long tokenPrice) {
         long timestamp = System.currentTimeMillis();
         RedisEstateTradeValue estateOrder = new RedisEstateTradeValue(customerId, -tokenAmount, tokenPrice, timestamp);
         RedisCustomerTradeValue customerOrder = new RedisCustomerTradeValue(estateId, -tokenAmount, tokenPrice, timestamp);
@@ -154,13 +156,13 @@ public class TradeRedisServiceImpl implements TradeRedisService {
     // 공통 매칭 로직 (매수 주문과 매도 주문 체결)
     private void processMatch(Long estateId, RedisEstateTradeValue buyOrder, RedisEstateTradeValue sellOrder) {
         // 매칭 수량 계산 (최소값)
-        int buyAmount = buyOrder.getTradeTokenAmount();
-        int sellAmount = -sellOrder.getTradeTokenAmount(); // 양수로 변환
-        int matchAmount = Math.min(buyAmount, sellAmount);
+        long buyAmount = buyOrder.getTradeTokenAmount();
+        long sellAmount = -sellOrder.getTradeTokenAmount(); // 양수로 변환
+        long matchAmount = Math.min(buyAmount, sellAmount);
 
         // 부분 체결 처리
-        int buyRemaining = buyAmount - matchAmount;
-        int sellRemaining = sellAmount - matchAmount;
+        long buyRemaining = buyAmount - matchAmount;
+        long sellRemaining = sellAmount - matchAmount;
 
         // 매수 주문 처리
         if (buyRemaining > 0) {
@@ -206,7 +208,7 @@ public class TradeRedisServiceImpl implements TradeRedisService {
     }
 
     // 체결 내역 저장
-    private void saveTradeTransaction(Long estateId, Long sellerId, Long buyerId, int amount, int price) {
+    private void saveTradeTransaction(Long estateId, Long sellerId, Long buyerId, long amount, long price) {
         // 필요한 엔티티들 조회
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));

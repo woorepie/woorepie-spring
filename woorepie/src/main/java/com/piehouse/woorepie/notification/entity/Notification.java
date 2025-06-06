@@ -25,6 +25,9 @@ public class Notification {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    @Column(nullable = false, length = 30)
+    private String title;
+
     @Column(nullable = false, length = 250)
     private String content;
 

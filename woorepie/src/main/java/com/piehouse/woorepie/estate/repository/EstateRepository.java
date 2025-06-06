@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface EstateRepository extends JpaRepository<Estate, Long> {
     
-    Optional<Integer> findTokenAmountByEstateId(Long estateId);
+    Optional<Long> findTokenAmountByEstateId(Long estateId);
     
     List<Estate> findByEstateStatus(EstateStatus estateStatus);
 

@@ -51,7 +51,7 @@ public class Customer {
     private String accountNumber;
 
     @Builder.Default
-    private Integer accountBalance = 0;
+    private Long accountBalance = 0L;
 
     @Column(length = 100, nullable = false, unique = true)
     private String customerKyc;
@@ -59,17 +59,27 @@ public class Customer {
     @Column(length = 1000, nullable = false, unique = true)
     private String customerIdentificationUrl;
 
+    // 계좌 잔액 에 배당금 추가
+    public void setAccountBalance(long accountBalance) {
+        this.accountBalance = accountBalance;
+    }
+
+    // 비밀번호 변경
+    public void updatePassword(String newPassword) {
+        this.customerPassword = newPassword;
+    }
+
+    // 계좌 잔액 증가
+    public void increaseAccountBalance(long amount) {
+        this.accountBalance += amount;
+    }
+
     // 계좌 잔액 감소 메서드 추가
-    public void decreaseBalance(int amount) {
+    public void decreaseAccountBalance(long amount) {
         if (this.accountBalance < amount) {
             throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
         }
         this.accountBalance -= amount;
-    }
-
-    // 계좌 잔액 에 배당금 추가
-    public void setAccountBalance(int accountBalance) {
-        this.accountBalance = accountBalance;
     }
 
 }

@@ -21,6 +21,8 @@ public class GetSubscriptionSimpleResponse {
 
     private String agentName;
 
+    private String businessName;
+
     private LocalDateTime subStartDate;
 
     private LocalDateTime subEndDate;
@@ -31,11 +33,11 @@ public class GetSubscriptionSimpleResponse {
 
     private String estateImageUrl;
 
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
     private BigDecimal dividendYield;
 

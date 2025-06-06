@@ -4,30 +4,112 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class NotificationContentUtils {
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초");
 
-    public static String createNotification(
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초");
+
+    // 매도 알림 (체결)
+    public static NotificationMessage createSellNotification(
             String customerName,
-            String assetName,
+            String estateName,
             long price,
-            int quantity,
-            LocalDateTime tradeTime,
-            boolean isBuy // 매수: true, 매도: false
+            long tokenAmount,
+            LocalDateTime tradeTime
     ) {
-        String tradeType = isBuy ? "매수" : "매도";
-        String formattedPrice = String.format("%,d원", price); // 20,000원 형식
-        String formattedTime = tradeTime.format(DATE_FORMATTER);
-
-        return String.format(
-                "[Woorepie] 거래 체결 안내\n\n" +
-                        "%s 고객님, 아래 매물에 대한 %s 주문이 체결되었습니다.\n\n" +
-                        "- 매물명: %s\n" +
-                        "- 체결 금액: %s\n" +
-                        "- 체결 수량: %d 토큰\n" +
-                        "- 체결 일시: %s\n\n" +
-                        "감사합니다.",
-                customerName, tradeType, assetName, formattedPrice, quantity, formattedTime
+        String title = "[Woorepie] 매도 체결 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물에 대한 매도 주문이 체결되었습니다.\n\n- 매물명: %s\n- 체결 금액: %,d원\n- 체결 수량: %d 토큰\n- 체결 일시: %s\n\n감사합니다.",
+                customerName, estateName, price, tokenAmount, tradeTime.format(formatter)
         );
+        return new NotificationMessage(title, content);
+    }
+
+    // 매수 알림 (체결)
+    public static NotificationMessage createBuyNotification(
+            String customerName,
+            String estateName,
+            long price,
+            long tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        String title = "[Woorepie] 매수 체결 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물에 대한 매수 주문이 체결되었습니다.\n\n- 매물명: %s\n- 체결 금액: %,d원\n- 체결 수량: %d 토큰\n- 체결 일시: %s\n\n감사합니다.",
+                customerName, estateName, price, tokenAmount, tradeTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 청약 성공 알림
+    public static NotificationMessage createSubscriptionSuccessNotification(
+            String customerName,
+            String estateName,
+            long price,
+            long tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        String title = "[Woorepie] 청약 체결 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물에 대한 청약이 체결되었습니다.\n\n- 매물명: %s\n- 체결 금액: %,d원\n- 체결 수량: %d 토큰\n- 체결 일시: %s\n\n감사합니다.",
+                customerName, estateName, price, tokenAmount, tradeTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 청약 실패 (모집 미달)
+    public static NotificationMessage createSubscriptionFailLackNotification(
+            String customerName,
+            String estateName,
+            long price,
+            long tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        String title = "[Woorepie] 청약 미체결 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물에 대한 청약이 모집 미달로 미체결되었습니다. 신청 금액은 환불 처리되었습니다.\n\n- 매물명: %s\n- 신청 금액: %,d원\n- 신청 수량: %d 토큰\n- 신청 일시: %s\n\n감사합니다.",
+                customerName, estateName, price, tokenAmount, tradeTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 청약 실패 (선착순 마감)
+    public static NotificationMessage createSubscriptionFailSoldoutNotification(
+            String customerName,
+            String estateName,
+            long price,
+            long tokenAmount,
+            LocalDateTime tradeTime
+    ) {
+        String title = "[Woorepie] 청약 미체결 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물에 대한 청약이 선착순 마감으로 미체결되었습니다. 신청 금액은 환불 처리되었습니다.\n\n- 매물명: %s\n- 신청 금액: %,d원\n- 신청 수량: %d 토큰\n- 신청 일시: %s\n\n감사합니다.",
+                customerName, estateName, price, tokenAmount, tradeTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 매각 환불
+    public static NotificationMessage createSellRefundNotification(
+            String customerName,
+            String estateName,
+            long refundAmount,
+            long tokenAmount,
+            LocalDateTime refundTime
+    ) {
+        String title = "[Woorepie] 매각 환불 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물의 매각에 따라 보유하셨던 토큰 금액이 환불 처리되었습니다.\n\n- 매물명: %s\n- 환불 금액: %,d원\n- 환불 수량: %d 토큰\n- 환불 일시: %s\n\n감사합니다.",
+                customerName, estateName, refundAmount, tokenAmount, refundTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 알림 제목/내용 한 번에 리턴하는 내부 클래스
+    public static class NotificationMessage {
+        public final String title;
+        public final String content;
+        public NotificationMessage(String title, String content) {
+            this.title = title;
+            this.content = content;
+        }
     }
 }

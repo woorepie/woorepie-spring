@@ -2,6 +2,7 @@ package com.piehouse.woorepie.customer.service.implement;
 
 import com.piehouse.woorepie.customer.dto.SessionCustomer;
 import com.piehouse.woorepie.customer.dto.request.CreateCustomerRequest;
+import com.piehouse.woorepie.customer.dto.request.ModifyPassword;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerSubscriptionResponse;
 import com.piehouse.woorepie.customer.dto.request.LoginCustomerRequest;
 import com.piehouse.woorepie.customer.dto.response.GetCustomerAccountResponse;
@@ -120,6 +121,34 @@ public class CustomerServiceImpl implements CustomerService {
         return true;
 
     }
+    
+    //전화번호 중복 확인
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean checkCustomerPhoneNumber(String customerPhoneNumber) {
+        if (customerRepository.existsByCustomerPhoneNumber(customerPhoneNumber)) {
+            throw new CustomException(ErrorCode.ALREADY_REGISTERED_PHONE);
+        }
+        return true;
+    }
+
+
+    @Override
+    public void modifyCustomerPassword(Long customerId, ModifyPassword passwordRequest) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(passwordRequest.getCurrentPassword(), customer.getCustomerPassword())) {
+            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(passwordRequest.getNewPassword());
+        customer.updatePassword(encodedNewPassword);
+
+        customerRepository.save(customer);
+
+    }
 
     // 회원가입
     @Override
@@ -198,8 +227,8 @@ public class CustomerServiceImpl implements CustomerService {
         Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
 
         //토큰 보유액 계산
-        int totalAccountTokenPrice = accounts.stream()
-                .mapToInt(account -> {
+        long totalAccountTokenPrice = accounts.stream()
+                .mapToLong(account -> {
                     RedisEstatePrice price = estatePriceMap.get(account.getEstate().getEstateId());
                     return account.getAccountTokenAmount() * price.getEstateTokenPrice();
                 })
@@ -215,6 +244,19 @@ public class CustomerServiceImpl implements CustomerService {
                 .accountBalance(customer.getAccountBalance())
                 .customerJoinDate(customer.getCustomerJoinDate())
                 .build();
+    }
+    
+    // 계좌 잔액 충전
+    @Override
+    @Transactional
+    public void plusCustomerAccountBalance(Long customerId, Long price) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        customer.increaseAccountBalance(price);
+        customerRepository.save(customer);
+        
     }
 
     // 계좌 내역 조회
@@ -242,7 +284,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .accountTokenAmount(account.getAccountTokenAmount())
                         .accountTokenPrice(price.getEstateTokenPrice() * account.getAccountTokenAmount())
                         .estateTokenPrice(price.getEstateTokenPrice())
-                        .estatePrice(price.getDividendYield())
+                        .estatePrice(price.getEstatePrice())
                         .build();
                 })
                 .toList();

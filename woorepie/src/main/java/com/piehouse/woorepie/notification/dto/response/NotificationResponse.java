@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class NotificationResponse {
     private final Long notificationId;
+    private final String title;
     private final String content;
     private final Boolean isRead;
     private final LocalDateTime createdAt;
@@ -17,6 +18,7 @@ public class NotificationResponse {
     public static NotificationResponse from(Notification notification) {
         return NotificationResponse.builder()
                 .notificationId(notification.getNotificationId())
+                .title(notification.getTitle())
                 .content(notification.getContent())
                 .isRead(notification.getIsRead())
                 .createdAt(notification.getCreatedAt())

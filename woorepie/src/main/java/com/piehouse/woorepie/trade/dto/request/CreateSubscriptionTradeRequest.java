@@ -18,5 +18,5 @@ public class CreateSubscriptionTradeRequest {
 
     @NotNull(message = "청약 수량은 필수입니다.")
     @Min(value = 1, message = "최소 1개 이상 신청해야 합니다.")
-    private Integer subAmount;
+    private Long subAmount;
 }

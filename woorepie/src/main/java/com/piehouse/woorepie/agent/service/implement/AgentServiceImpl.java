@@ -8,11 +8,13 @@ import com.piehouse.woorepie.agent.dto.response.GetAgentResponse;
 import com.piehouse.woorepie.agent.entity.Agent;
 import com.piehouse.woorepie.agent.repository.AgentRepository;
 import com.piehouse.woorepie.agent.service.AgentService;
+import com.piehouse.woorepie.estate.dto.RedisEstatePrice;
 import com.piehouse.woorepie.estate.entity.Estate;
 import com.piehouse.woorepie.estate.entity.EstatePrice;
 import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
+import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.implement.S3ServiceImpl;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -43,6 +46,7 @@ public class AgentServiceImpl implements AgentService {
     private final DividendRepository dividendRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3ServiceImpl s3Service;
+    private final EstateRedisService estateRedisService;
 
     @Override
     @Transactional(readOnly = true)
@@ -152,34 +156,44 @@ public class AgentServiceImpl implements AgentService {
     @Override
     @Transactional(readOnly = true)
     public List<AgentEstateListResponse> getEstatesByAgent(Long agentId) {
-        // 수정 전
-        // List<Estate> estateList = estateRepository.findByAgentId(agentId);
-
-        // ✅ 수정 후
+        // 1. DB에서 agent의 estate 목록 조회
         List<Estate> estateList = estateRepository.findByAgent_AgentId(agentId);
 
+        // 2. estateId만 리스트로 추출
+        List<Long> estateIds = estateList.stream()
+                .map(Estate::getEstateId)
+                .toList();
+        // 3. Redis에서 estateId 리스트로 가격 정보 한꺼번에 조회
+        Map<Long, RedisEstatePrice> estatePriceMap = estateRedisService.getMultipleRedisEstatePrice(estateIds);
+
+        // 4. estateList를 돌면서 각 estate에 price를 할당해서 응답 생성
         return estateList.stream()
                 .map(e -> {
-                    Integer estateTokenPrice = estatePriceRepository
-                            .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(e.getEstateId())
-                            .map(EstatePrice::getEstatePrice)
-                            .orElse(null);
+                    RedisEstatePrice price = estatePriceMap.get(e.getEstateId());
+                    long estateTokenPrice = price != null ? price.getEstateTokenPrice() : 0; // int로 바로 할당
+                    BigDecimal dividend = price != null ? price.getDividendYield() : BigDecimal.ZERO; // int로 바로 할당
 
-                    BigDecimal dividendYield = dividendRepository
-                            .findTopByEstate_EstateIdOrderByDividendDateDesc(e.getEstateId())
-                            .map(d -> d.getDividendYield())
-                            .orElse(null);
-
+                    assert price != null;
                     return AgentEstateListResponse.builder()
                             .estateId(e.getEstateId())
                             .estateName(e.getEstateName())
                             .tokenAmount(e.getTokenAmount())
                             .estateTokenPrice(estateTokenPrice)
-                            .dividendYield(dividendYield)
+                            .dividendYield(dividend)
                             .estateStatus(e.getEstateStatus().name())
                             .build();
                 })
                 .toList();
+    }
+
+    //전화번호 중복 확인
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean checkAgentPhoneNumber(String phoneNumber) {
+        if (agentRepository.existsByAgentPhoneNumber(phoneNumber)) {
+            throw new CustomException(ErrorCode.ALREADY_REGISTERED_PHONE);
+        }
+        return true;
     }
 
 }

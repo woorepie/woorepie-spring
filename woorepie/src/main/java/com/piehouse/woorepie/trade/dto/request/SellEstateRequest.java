@@ -13,8 +13,8 @@ public class SellEstateRequest {
 
     private Long estateId;
 
-    private Integer tradeTokenAmount;
+    private Long tradeTokenAmount;
 
-    private Integer tokenPrice;
+    private Long tokenPrice;
 
 }

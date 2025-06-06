@@ -6,7 +6,7 @@ import com.piehouse.woorepie.customer.repository.AccountRepository;
 import com.piehouse.woorepie.customer.repository.CustomerRepository;
 import com.piehouse.woorepie.estate.entity.Dividend;
 import com.piehouse.woorepie.estate.entity.Estate;
-import com.piehouse.woorepie.estate.entity.EstatePrice;
+import com.piehouse.woorepie.estate.entity.EstateStatus;
 import com.piehouse.woorepie.estate.repository.DividendRepository;
 import com.piehouse.woorepie.estate.repository.EstatePriceRepository;
 import com.piehouse.woorepie.estate.repository.EstateRepository;
@@ -15,6 +15,7 @@ import com.piehouse.woorepie.global.exception.CustomException;
 import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.kafka.dto.*;
 import com.piehouse.woorepie.global.kafka.service.KafkaConsumerService;
+import com.piehouse.woorepie.notification.service.NotificationService;
 import com.piehouse.woorepie.subscription.service.SubscriptionService;
 import com.piehouse.woorepie.trade.service.TradeRedisService;
 import com.piehouse.woorepie.trade.service.TradeService;
@@ -26,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -43,6 +44,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
     private final DividendRepository dividendRepository;
     private final EstatePriceRepository estatePriceRepository;
     private final CustomerRepository customerRepository;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -80,56 +82,6 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         subscriptionService.updateSubscriptionsOnFailure(event.getEstateId());
     }
 
-    @Override
-    @KafkaListener(topics = "subscription.accept")
-    @Transactional
-    public void handleSubscriptionApproval(SubscriptionAcceptMessage message) {
-        log.info("[Kafka] 청약 승인 수신");
-
-        Estate estate = estateRepository.findById(message.getEstateId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
-
-        message.getSubCustomer().forEach(subCustomer -> {
-
-            Customer customer = customerRepository.findById(subCustomer.getCustomerId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            Integer tokenPrice = subCustomer.getTokenPrice();
-            Integer tokenAmount = subCustomer.getTradeTokenAmount();
-
-            // 계좌 조회: 존재 시 update, 없으면 새로 생성
-            Optional<Account> optionalAccount = accountRepository.findByCustomerAndEstate(customer, estate);
-
-            if (optionalAccount.isPresent()) {
-                // 계좌 존재 시 업데이트
-                Account account = optionalAccount.get();
-
-                int newTokenAmount = account.getAccountTokenAmount() + tokenAmount;
-                account.updateTokenAmount(newTokenAmount);
-
-                int newTotalAmount = account.getTotalAccountAmount() + (tokenAmount * tokenPrice);
-                account.updateTotalAmount(newTotalAmount);
-
-                accountRepository.save(account);
-
-            } else {
-                // 계좌가 없으면 신규 생성
-                Account newAccount = Account.builder()
-                        .customer(customer)
-                        .estate(estate)
-                        .accountTokenAmount(tokenAmount)
-                        .totalAccountAmount(tokenAmount * tokenPrice)
-                        .build();
-                accountRepository.save(newAccount);
-            }
-        });
-
-        // 매물 상태 변경 → SUCCESS
-        estate.updateEstateStatusToSuccess();
-        estateRepository.save(estate);
-
-    }
-
     // 배당금 승인 로직
     @Override
     @KafkaListener(topics = "dividend.accept")
@@ -163,7 +115,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
             // 배당금 = 보유 수량 * 배당률
@@ -171,7 +123,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                     .setScale(0, RoundingMode.DOWN) // 소수점 절삭
                     .intValue();
 
-            int updatedBalance = customer.getAccountBalance() + dividendAmount;
+            long updatedBalance = customer.getAccountBalance() + dividendAmount;
             customer.setAccountBalance(updatedBalance);
         }
 
@@ -189,34 +141,37 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
 
-        // 2. 상태 EXIT 변경
-        estate.updateEstateStatusToExit();
+        estate.updateSubState(EstateStatus.EXIT);
         estateRepository.save(estate);
 
-        // 3. 최근 시세 조회
-        EstatePrice latestPrice = estatePriceRepository
-                .findTopByEstate_EstateIdOrderByEstatePriceDateDesc(estateId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
+        long estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
 
-        int estatePrice = latestPrice.getEstatePrice();
-
-        // 4. 계좌 조회
+        // 3. 계좌 조회
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
-            int refundAmount = tokenAmount * estatePrice;
+            long refundAmount = tokenAmount * estateTokenPrice;
 
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
 
+            notificationService.sendSellRefundNotification(
+                    customer,
+                    estate.getEstateName(),
+                    refundAmount,
+                    tokenAmount,
+                    LocalDateTime.now()
+            );
+
             // 토큰 소멸 처리
-            account.updateTokenAmount(0);
+            accountRepository.delete(account);
         }
 
         log.info("매각 환불 및 상태 처리 완료");
     }
+
 
 }

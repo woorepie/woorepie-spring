@@ -41,13 +41,13 @@ public class GetSubscriptionDetailsResponse {
 
     private String estateImageUrl;
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
-    private Integer subTokenAmount;
+    private Long subTokenAmount;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
     private EstateStatus estateStatus;
 

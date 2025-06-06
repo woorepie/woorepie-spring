@@ -8,10 +8,10 @@ import java.util.List;
 
 public interface TradeRedisService {
     // 매물과 고객 기준 매수 주문 동시 저장
-    void saveBuyOrder(Long estateId, Long customerId, int tokenAmount, int tokenPrice);
+    void saveBuyOrder(Long estateId, Long customerId, long tokenAmount, long tokenPrice);
 
     // 매물과 고객 기준 매도 주문 동시 저장
-    void saveSellOrder(Long estateId, Long customerId, int tokenAmount, int tokenPrice);
+    void saveSellOrder(Long estateId, Long customerId, long tokenAmount, long tokenPrice);
 
     // 매물 기준 매수 주문 전체 조회 (시간순)
     List<RedisEstateTradeValue> getEstateBuyOrders(Long estateId);
