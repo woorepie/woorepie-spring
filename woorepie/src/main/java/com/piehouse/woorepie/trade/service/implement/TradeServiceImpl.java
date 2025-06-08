@@ -28,9 +28,7 @@ import com.piehouse.woorepie.trade.repository.TradeRepository;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import com.piehouse.woorepie.estate.service.EstateRedisService;
@@ -52,9 +50,6 @@ public class TradeServiceImpl implements TradeService {
     private final NotificationService notificationService;
     private final EstateRepository estateRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final StringRedisTemplate redisTemplate;
-    private final PlatformTransactionManager transactionManager;
-    private static final String REMAINING_TOKENS_KEY_FORMAT = "subscription:%s:remaining-tokens";
     private final EstateRedisService estateRedisService;
 
     @Override
@@ -335,7 +330,7 @@ public class TradeServiceImpl implements TradeService {
 
         // 3. 고객 계좌 차감
         long totalPrice = requestedAmount * tokenPrice;
-        long updatedRows = customerRepository.decreaseBalance(customerId, totalPrice);
+        int updatedRows = customerRepository.decreaseBalance(customerId, totalPrice);
 
         if (updatedRows == 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
@@ -351,6 +346,8 @@ public class TradeServiceImpl implements TradeService {
                 .build();
         subscriptionRepository.save(subscription);
         log.info("청약 요청 DB에 저장 성공 - estateId: {}, customerId: {}", estateId, customerId);
+
+        estateRedisService.decrementButNotNegative(estateId, requestedAmount);
     }
 
 }

@@ -1,9 +1,7 @@
 package com.piehouse.woorepie.estate.controller;
 
-import com.piehouse.woorepie.estate.dto.response.GetBuildingInfoResponse;
-import com.piehouse.woorepie.estate.dto.response.GetEstateDetailsResponse;
-import com.piehouse.woorepie.estate.dto.response.GetEstatePriceResponse;
-import com.piehouse.woorepie.estate.dto.response.GetEstateSimpleResponse;
+import com.piehouse.woorepie.estate.dto.response.*;
+import com.piehouse.woorepie.estate.service.EstateRedisService;
 import com.piehouse.woorepie.estate.service.EstateService;
 import com.piehouse.woorepie.global.response.ApiResponse;
 import com.piehouse.woorepie.global.response.ApiResponseUtil;
@@ -35,6 +33,7 @@ import java.util.Locale;
 public class EstateController {
 
     private final EstateService estateService;
+    private final EstateRedisService estateRedisService;
 
     @Value("${vworld.api.key}")
     private String vWorldApiKey;
@@ -57,6 +56,14 @@ public class EstateController {
         return ApiResponseUtil.success(response, request);
     }
 
+    @GetMapping("/remain/token")
+    public ResponseEntity<ApiResponse<GetRemainingTokensResponse>> getRemainingTokens(
+            @RequestParam Long estateId,
+            HttpServletRequest request) {
+
+        Long remainingTokens = estateRedisService.getRemainingTokensOrInit(estateId);
+        return ApiResponseUtil.success(new GetRemainingTokensResponse(remainingTokens), request);
+    }
     /**
      * 실시간 공시지가 및 건물 정보 조회
      */
