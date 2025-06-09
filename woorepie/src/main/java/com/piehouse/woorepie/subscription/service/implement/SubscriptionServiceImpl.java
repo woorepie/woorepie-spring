@@ -336,7 +336,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // 환불 처리 메소드
     public void refundSubscriptionFailure(Subscription failSub, long tokenPrice) {
         long refundAmount = failSub.getSubTokenAmount() * tokenPrice;
-        long updatedRows = customerRepository.increaseBalance(failSub.getCustomer().getCustomerId(), refundAmount);
+        int updatedRows = customerRepository.increaseBalance(failSub.getCustomer().getCustomerId(), refundAmount);
         if (updatedRows == 0) {
             throw new CustomException(ErrorCode.ACCOUNT_NON_EXIST);
         }
