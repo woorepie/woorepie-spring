@@ -11,8 +11,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSellNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 매도 체결 안내";
@@ -27,8 +27,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createBuyNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 매수 체결 안내";
@@ -43,8 +43,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionSuccessNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 체결 안내";
@@ -59,8 +59,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionFailLackNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 미체결 안내";
@@ -75,8 +75,8 @@ public class NotificationContentUtils {
     public static NotificationMessage createSubscriptionFailSoldoutNotification(
             String customerName,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         String title = "[Woorepie] 청약 미체결 안내";
@@ -87,18 +87,34 @@ public class NotificationContentUtils {
         return new NotificationMessage(title, content);
     }
 
-    // 매각 환불
-    public static NotificationMessage createSellRefundNotification(
+    // 매각 대금 지급
+    public static NotificationMessage createSellPaymentNotification(
             String customerName,
             String estateName,
-            int refundAmount,
-            int tokenAmount,
-            LocalDateTime refundTime
+            long paymentAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
     ) {
-        String title = "[Woorepie] 매각 환불 안내";
+        String title = "[Woorepie] 매각 대금 지급 안내";
         String content = String.format(
-                "%s 고객님, 아래 매물의 매각에 따라 보유하셨던 토큰 금액이 환불 처리되었습니다.\n\n- 매물명: %s\n- 환불 금액: %,d원\n- 환불 수량: %d 토큰\n- 환불 일시: %s\n\n감사합니다.",
-                customerName, estateName, refundAmount, tokenAmount, refundTime.format(formatter)
+                "%s 고객님, 아래 매물의 매각이 완료되어 보유하신 토큰에 대한 매각 대금이 지급되었습니다.\n\n- 매물명: %s\n- 지급 금액: %,d원\n- 지급 수량: %d 토큰\n- 지급 일시: %s\n\n감사합니다.",
+                customerName, estateName, paymentAmount, tokenAmount, paymentTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
+    // 배당금 지급
+    public static NotificationMessage createDividendPaymentNotification(
+            String customerName,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
+    ) {
+        String title = "[Woorepie] 배당금 지급 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물의 배당금이 지급되었습니다.\n\n- 매물명: %s\n- 지급 금액: %,d원\n- 지급 수량: %d 토큰\n- 지급 일시: %s\n\n감사합니다.",
+                customerName, estateName, dividendAmount, tokenAmount, paymentTime.format(formatter)
         );
         return new NotificationMessage(title, content);
     }

@@ -6,20 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 public interface EstateRedisService {
-    // 청약 오픈 시 PostgreSQL에서 tokenAmount를 읽어와 Redis에 초기화
-    void initializeRemainingTokens(Long estateId);
+    // 남은 토큰 수량 Redis에서 조회 및 초기화
+    Long getRemainingTokensOrInit(Long estateId);
 
-    // 남은 토큰 수량 Reids에 저장 (STRING)
-    void setRemainingTokens(String estateId, int remainingTokens);
-
-    // 남은 토큰 수량 Redis에서 조회
-    int getRemainingTokens(String estateId);
-
-    // 토큰 수량 감소 (원자적 연산)
-    Long decrementTokens(String estateId, int amount);
+    // Lua Script 기반 감소 메서드
+    Long decrementButNotNegative(Long estateId, long amount);
 
     // 토큰 수량 증가 (원자적 연산)
-    Long incrementTokens(String estateId, int amount);
+    Long incrementTokens(Long estateId, long amount);
 
     // 매물 시세 조회
     RedisEstatePrice getRedisEstatePrice(Long estateId);

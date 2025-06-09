@@ -115,7 +115,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
             // 배당금 = 보유 수량 * 배당률
@@ -123,8 +123,16 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
                     .setScale(0, RoundingMode.DOWN) // 소수점 절삭
                     .intValue();
 
-            int updatedBalance = customer.getAccountBalance() + dividendAmount;
+            long updatedBalance = customer.getAccountBalance() + dividendAmount;
             customer.setAccountBalance(updatedBalance);
+
+            notificationService.sendDividendPaymentNotification(
+                    customer,
+                    estate.getEstateName(),
+                    dividendAmount,
+                    tokenAmount,
+                    LocalDateTime.now()
+            );
         }
 
         log.info("배당금 지급 완료 - estateId: {}, 대상 계좌 수: {}", estateId, accounts.size());
@@ -144,21 +152,21 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
         estate.updateSubState(EstateStatus.EXIT);
         estateRepository.save(estate);
 
-        int estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
+        long estateTokenPrice = estate.getEstateSalePrice() / estate.getTokenAmount();
 
         // 3. 계좌 조회
         List<Account> accounts = accountRepository.findByEstateWithCustomer(estate);
 
         for (Account account : accounts) {
-            int tokenAmount = account.getAccountTokenAmount();
+            long tokenAmount = account.getAccountTokenAmount();
             Customer customer = account.getCustomer();
 
-            int refundAmount = tokenAmount * estateTokenPrice;
+            long refundAmount = tokenAmount * estateTokenPrice;
 
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
 
-            notificationService.sendSellRefundNotification(
+            notificationService.sendSellPaymentNotification(
                     customer,
                     estate.getEstateName(),
                     refundAmount,
@@ -170,7 +178,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
             accountRepository.delete(account);
         }
 
-        log.info("매각 환불 및 상태 처리 완료");
+        log.info("매각 대금 지급 및 상태 처리 완료");
     }
 
 

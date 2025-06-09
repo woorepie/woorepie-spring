@@ -9,6 +9,6 @@ import lombok.*;
 public class OrderCreatedEvent {
     private Long estateId;
     private Long customerId;
-    private Integer tokenPrice;
-    private Integer tradeTokenAmount;
+    private Long tokenPrice;
+    private Long tradeTokenAmount;
 }

@@ -34,9 +34,9 @@ public class SubscriptionSyncScheduler {
                 return;
             }
 
-            int redisRemaining = Integer.parseInt(redisValue);
-            int totalSubscribed = subscriptionRepository.sumSubTokenAmountByEstateId(estate.getEstateId());
-            int totalTokens = estate.getTokenAmount(); // tokenAmount 필드 사용
+            long redisRemaining = Long.parseLong(redisValue);
+            long totalSubscribed = subscriptionRepository.sumSubTokenAmountByEstateId(estate.getEstateId());
+            long totalTokens = estate.getTokenAmount(); // tokenAmount 필드 사용
 
             if (redisRemaining != (totalTokens - totalSubscribed)) {
                 log.error("토큰 불일치 - estateId: {}, Redis: {}, PostgreSQL 계산: {}",

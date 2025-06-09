@@ -24,9 +24,9 @@ public class GetEstateSimpleResponse {
 
     private BigDecimal dividendYield;
 
-    private Integer tokenAmount;
+    private Long tokenAmount;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
     private LocalDateTime estateRegistrationDate;
 

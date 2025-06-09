@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 public class PlusAccountBalance {
 
     @NotBlank(message = "price 필수입니다.")
-    private Integer price;
+    private Long price;
 
 }

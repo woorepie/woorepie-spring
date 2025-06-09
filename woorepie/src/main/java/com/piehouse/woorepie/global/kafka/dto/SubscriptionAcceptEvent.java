@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class SubscriptionAcceptEvent {
     private Long estateId;
     private Long customerId;
-    private Integer tokenPrice;
-    private Integer tradeTokenAmount;
+    private Long tokenPrice;
+    private Long tradeTokenAmount;
 }

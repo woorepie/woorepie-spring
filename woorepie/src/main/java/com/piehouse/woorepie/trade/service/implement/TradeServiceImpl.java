@@ -28,9 +28,7 @@ import com.piehouse.woorepie.trade.repository.TradeRepository;
 import com.piehouse.woorepie.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import com.piehouse.woorepie.subscription.repository.SubscriptionRepository;
 import com.piehouse.woorepie.estate.service.EstateRedisService;
@@ -52,14 +50,11 @@ public class TradeServiceImpl implements TradeService {
     private final NotificationService notificationService;
     private final EstateRepository estateRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final StringRedisTemplate redisTemplate;
-    private final PlatformTransactionManager transactionManager;
-    private static final String REMAINING_TOKENS_KEY_FORMAT = "subscription:%s:remaining-tokens";
     private final EstateRedisService estateRedisService;
 
     @Override
     @Transactional
-    public Trade saveTrade(Estate estate, Customer seller, Customer buyer, int tradeTokenAmount, int tokenPrice) {
+    public Trade saveTrade(Estate estate, Customer seller, Customer buyer, long tradeTokenAmount, long tokenPrice) {
         Customer persistedSeller = customerRepository.findById(seller.getCustomerId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -95,10 +90,10 @@ public class TradeServiceImpl implements TradeService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NON_EXIST));
 
         // 거래 금액 계산
-        int tradeAmount = tradeTokenAmount * tokenPrice;
+        long tradeAmount = tradeTokenAmount * tokenPrice;
 
-        int newTokenAmount = sellerAccount.getAccountTokenAmount() - tradeTokenAmount;
-        int newTotalAmount = sellerAccount.getTotalAccountAmount() - tradeAmount;
+        long newTokenAmount = sellerAccount.getAccountTokenAmount() - tradeTokenAmount;
+        long newTotalAmount = sellerAccount.getTotalAccountAmount() - tradeAmount;
 
         // 판매자 계좌 업데이트 - 토큰과 금액 모두 감소
         sellerAccount.updateTokenAmount(newTokenAmount)
@@ -114,8 +109,8 @@ public class TradeServiceImpl implements TradeService {
                     Account newAccount = Account.builder()
                             .customer(buyer)
                             .estate(estate)
-                            .accountTokenAmount(0)
-                            .totalAccountAmount(0)
+                            .accountTokenAmount(0L)
+                            .totalAccountAmount(0L)
                             .build();
                     return accountRepository.save(newAccount);
                 });
@@ -148,8 +143,8 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public void buy(BuyEstateRequest request, Long customerId) {
 
-        int amount = request.getTradeTokenAmount();
-        int price = request.getTokenPrice();
+        long amount = request.getTradeTokenAmount();
+        long price = request.getTokenPrice();
 
         if (!isValidBuyRequest(customerId, amount, price)) {
             throw new CustomException(ErrorCode.INSUFFICIENT_CASH);
@@ -166,14 +161,14 @@ public class TradeServiceImpl implements TradeService {
 
     }
 
-    private boolean isValidBuyRequest(Long customerId, int newTokenAmount, int newTokenPrice) {
+    private boolean isValidBuyRequest(Long customerId, long newTokenAmount, long newTokenPrice) {
 
-        int newCost = newTokenAmount * newTokenPrice;
-        int cumCost = getCumulativeBuyCost(customerId);
+        long newCost = newTokenAmount * newTokenPrice;
+        long cumCost = getCumulativeBuyCost(customerId);
 
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NON_EXIST));
-        int balance = customer.getAccountBalance();
+        long balance = customer.getAccountBalance();
 
         log.info("[매수검증] 고객: {}, 기존: {}, 신규: {}, 합계: {}, 잔액: {}",
                 customerId, cumCost, newCost, cumCost + newCost, balance);
@@ -182,7 +177,7 @@ public class TradeServiceImpl implements TradeService {
 
     }
 
-    private int getCumulativeBuyCost(Long customerId) {
+    private long getCumulativeBuyCost(Long customerId) {
 
         List<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
         if (orders == null || orders.isEmpty()) {
@@ -191,7 +186,7 @@ public class TradeServiceImpl implements TradeService {
         }
         return orders.stream()
                 .filter(Objects::nonNull)
-                .mapToInt(o -> o.getTradeTokenAmount() * o.getTokenPrice())
+                .mapToLong(o -> o.getTradeTokenAmount() * o.getTokenPrice())
                 .sum();
 
     }
@@ -202,7 +197,7 @@ public class TradeServiceImpl implements TradeService {
         Long estateId = request.getEstateId();
 
         // 입력값이 양수더라도 매도(-)기 때문에 음수로 변환해줌
-        int sellAmt = -Math.abs(request.getTradeTokenAmount());
+        long sellAmt = -Math.abs(request.getTradeTokenAmount());
 
         if (!isValidSellRequest(customerId, estateId, sellAmt)) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
@@ -219,11 +214,11 @@ public class TradeServiceImpl implements TradeService {
 
     }
 
-    private boolean isValidSellRequest(Long customerId, Long estateId, int newSell) {
+    private boolean isValidSellRequest(Long customerId, Long estateId, long newSell) {
 
         log.info("inValidSellRequest는 들어옴");
-        int cumSell = getCumulativeSellAmount(customerId, estateId);
-        int owned = accountRepository
+        long cumSell = getCumulativeSellAmount(customerId, estateId);
+        long owned = accountRepository
                 .findByCustomer_CustomerIdAndEstate_EstateId(customerId, estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NON_EXIST))
                 .getAccountTokenAmount();
@@ -241,7 +236,7 @@ public class TradeServiceImpl implements TradeService {
 
     }
 
-    private int getCumulativeSellAmount(Long customerId, Long estateId) {
+    private long getCumulativeSellAmount(Long customerId, Long estateId) {
 
         log.info("getCumulativeSell 들어옴");
         List<RedisEstateTradeValue> orders = redisOrderRepository.getEstateSellOrders(estateId);
@@ -256,7 +251,7 @@ public class TradeServiceImpl implements TradeService {
                 .filter(Objects::nonNull)
                 .filter(o -> o.getCustomerId() != null)
                 .filter(o -> o.getCustomerId().equals(customerId) && o.getTradeTokenAmount() < 0)
-                .mapToInt(RedisEstateTradeValue::getTradeTokenAmount)
+                .mapToLong(RedisEstateTradeValue::getTradeTokenAmount)
                 .sum();
 
     }
@@ -269,7 +264,7 @@ public class TradeServiceImpl implements TradeService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Long estateId = request.getEstateId();
-        int requestAmount = request.getSubAmount();
+        long requestAmount = request.getSubAmount();
         LocalDateTime now = LocalDateTime.now();
 
         log.info("[청약 신청 시작] customerId: {}, estateId: {}, 신청수량: {}", customerId, estateId, requestAmount);
@@ -285,18 +280,18 @@ public class TradeServiceImpl implements TradeService {
 
         // Redis에서 1토큰당 가격 조회
         RedisEstatePrice redisPrice = estateRedisService.getRedisEstatePrice(estateId);
-        int tokenPrice = redisPrice.getEstateTokenPrice();
-        int subscriptionCost = requestAmount * tokenPrice;
+        long tokenPrice = redisPrice.getEstateTokenPrice();
+        long subscriptionCost = requestAmount * tokenPrice;
 
         // Redis에서 고객의 기존 매수 요청 금액 조회
         List<RedisCustomerTradeValue> orders = redisOrderRepository.getCustomerBuyOrders(customerId);
-        int cumulativeBuyCost = orders == null ? 0 :
+        long cumulativeBuyCost = orders == null ? 0 :
                 orders.stream()
                         .filter(Objects::nonNull)
-                        .mapToInt(o -> o.getTradeTokenAmount() * o.getTokenPrice())
+                        .mapToLong(o -> o.getTradeTokenAmount() * o.getTokenPrice())
                         .sum();
 
-        int userBalance = customer.getAccountBalance();
+        long userBalance = customer.getAccountBalance();
 
         log.info("[청약 검증] customerId: {}, 기존매수금액: {}, 청약금액: {}, 총합: {}, 잔액: {}",
                 customerId, cumulativeBuyCost, subscriptionCost, cumulativeBuyCost + subscriptionCost, userBalance);
@@ -320,7 +315,7 @@ public class TradeServiceImpl implements TradeService {
     // 청약 신청 처리 로직
     @Override
     @Transactional
-    public void processSubscriptionRequest(Long estateId, Long customerId, int requestedAmount, int tokenPrice) {
+    public void processSubscriptionRequest(Long estateId, Long customerId, long requestedAmount, long tokenPrice) {
         // 1. 매물 상태 확인 (RUNNING 상태만 허용)
         Estate estate = estateRepository.findById(estateId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ESTATE_NOT_FOUND));
@@ -334,7 +329,7 @@ public class TradeServiceImpl implements TradeService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 3. 고객 계좌 차감
-        int totalPrice = requestedAmount * tokenPrice;
+        long totalPrice = requestedAmount * tokenPrice;
         int updatedRows = customerRepository.decreaseBalance(customerId, totalPrice);
 
         if (updatedRows == 0) {
@@ -351,6 +346,8 @@ public class TradeServiceImpl implements TradeService {
                 .build();
         subscriptionRepository.save(subscription);
         log.info("청약 요청 DB에 저장 성공 - estateId: {}, customerId: {}", estateId, customerId);
+
+        estateRedisService.decrementButNotNegative(estateId, requestedAmount);
     }
 
 }

@@ -22,8 +22,8 @@ public interface NotificationService {
     void sendTradeNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime,
             boolean isBuy
     );
@@ -32,8 +32,8 @@ public interface NotificationService {
     void sendSubscriptionSuccessNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     );
 
@@ -41,8 +41,8 @@ public interface NotificationService {
     void sendSubscriptionFailLackNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     );
 
@@ -50,17 +50,26 @@ public interface NotificationService {
     void sendSubscriptionFailSoldoutNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     );
 
     // 매각 알림
-    void sendSellRefundNotification(
+    void sendSellPaymentNotification(
             Customer customer,
             String estateName,
-            int refundAmount,
-            int tokenAmount,
+            long refundAmount,
+            long tokenAmount,
             LocalDateTime refundTime
+    );
+
+    // 배당금 지급 알림
+    void sendDividendPaymentNotification(
+            Customer customer,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
     );
 }

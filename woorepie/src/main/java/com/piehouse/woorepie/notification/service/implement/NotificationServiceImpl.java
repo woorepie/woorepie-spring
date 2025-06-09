@@ -25,6 +25,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 읽지 않은 알림 조회
     @Transactional(readOnly = true)
+    @Override
     public List<NotificationResponse> getUnreadNotifications(Long customerId) {
         return notificationRepository.findByCustomer_CustomerIdAndIsReadFalse(customerId)
                 .stream()
@@ -34,6 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 전체 알림 조회 (읽은/안읽은)
     @Transactional(readOnly = true)
+    @Override
     public List<NotificationResponse> getAllNotifications(Long customerId) {
         return notificationRepository.findByCustomer_CustomerIdOrderByCreatedAtDesc(customerId)
                 .stream()
@@ -43,6 +45,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 알림 읽음 처리
     @Transactional
+    @Override
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(NOTIFICATION_NON_EXIST));
@@ -51,11 +54,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 거래 체결(매수/매도) 알림
     @Transactional
+    @Override
     public void sendTradeNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime,
             boolean isBuy
     ) {
@@ -84,11 +88,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 청약 성공 알림
     @Transactional
+    @Override
     public void sendSubscriptionSuccessNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -107,11 +112,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 청약 실패(모집 미달) 알림
     @Transactional
+    @Override
     public void sendSubscriptionFailLackNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -130,11 +136,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 청약 실패(선착순 마감) 알림
     @Transactional
+    @Override
     public void sendSubscriptionFailSoldoutNotification(
             Customer customer,
             String estateName,
-            int price,
-            int tokenAmount,
+            long price,
+            long tokenAmount,
             LocalDateTime tradeTime
     ) {
         NotificationContentUtils.NotificationMessage message =
@@ -153,15 +160,16 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 매각 환불 알림
     @Transactional
-    public void sendSellRefundNotification(
+    @Override
+    public void sendSellPaymentNotification(
             Customer customer,
             String estateName,
-            int refundAmount,
-            int tokenAmount,
+            long refundAmount,
+            long tokenAmount,
             LocalDateTime refundTime
     ) {
         NotificationContentUtils.NotificationMessage message =
-                NotificationContentUtils.createSellRefundNotification(
+                NotificationContentUtils.createSellPaymentNotification(
                         customer.getCustomerName(), estateName, refundAmount, tokenAmount, refundTime
                 );
 
@@ -176,4 +184,32 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("[매각 환불 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
     }
+
+    // 배당금 지급 알림
+    @Transactional
+    @Override
+    public void sendDividendPaymentNotification(
+            Customer customer,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createDividendPaymentNotification(
+                        customer.getCustomerName(), estateName, dividendAmount, tokenAmount, paymentTime
+                );
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
+
+        log.info("[배당금 지급 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+    }
+
 }

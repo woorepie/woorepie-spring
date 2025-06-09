@@ -17,12 +17,12 @@ public class GetCustomerAccountResponse {
 
     private String estateName;
 
-    private Integer accountTokenAmount;
+    private Long accountTokenAmount;
 
-    private Integer accountTokenPrice;
+    private Long accountTokenPrice;
 
-    private Integer estateTokenPrice;
+    private Long estateTokenPrice;
 
-    private Integer estatePrice;
+    private Long estatePrice;
 
 }
