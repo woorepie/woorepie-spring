@@ -52,7 +52,7 @@ public class OpenaiServiceImpl implements OpenaiService {
             """, name, address, lat, lng);
             // JSON 구성
             JsonNode rootNode = mapper.createObjectNode()
-                    .put("model", "gpt-4")
+                    .put("model", "gpt-3.5-turbo")
                     .put("temperature", 0.7);
 
             JsonNode messagesNode = mapper.createArrayNode()
