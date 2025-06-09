@@ -103,6 +103,22 @@ public class NotificationContentUtils {
         return new NotificationMessage(title, content);
     }
 
+    // 배당금 지급
+    public static NotificationMessage createDividendPaymentNotification(
+            String customerName,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
+    ) {
+        String title = "[Woorepie] 배당금 지급 안내";
+        String content = String.format(
+                "%s 고객님, 아래 매물의 배당금이 지급되었습니다.\n\n- 매물명: %s\n- 지급 금액: %,d원\n- 지급 수량: %d 토큰\n- 지급 일시: %s\n\n감사합니다.",
+                customerName, estateName, dividendAmount, tokenAmount, paymentTime.format(formatter)
+        );
+        return new NotificationMessage(title, content);
+    }
+
     // 알림 제목/내용 한 번에 리턴하는 내부 클래스
     public static class NotificationMessage {
         public final String title;

@@ -184,4 +184,32 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("[매각 환불 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
     }
+
+    // 배당금 지급 알림
+    @Transactional
+    @Override
+    public void sendDividendPaymentNotification(
+            Customer customer,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
+    ) {
+        NotificationContentUtils.NotificationMessage message =
+                NotificationContentUtils.createDividendPaymentNotification(
+                        customer.getCustomerName(), estateName, dividendAmount, tokenAmount, paymentTime
+                );
+
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .customer(customer)
+                        .title(message.title)
+                        .content(message.content)
+                        .isRead(false)
+                        .build()
+        );
+
+        log.info("[배당금 지급 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+    }
+
 }

@@ -63,4 +63,13 @@ public interface NotificationService {
             long tokenAmount,
             LocalDateTime refundTime
     );
+
+    // 배당금 지급 알림
+    void sendDividendPaymentNotification(
+            Customer customer,
+            String estateName,
+            int dividendAmount,
+            long tokenAmount,
+            LocalDateTime paymentTime
+    );
 }

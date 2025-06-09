@@ -125,6 +125,14 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
             long updatedBalance = customer.getAccountBalance() + dividendAmount;
             customer.setAccountBalance(updatedBalance);
+
+            notificationService.sendDividendPaymentNotification(
+                    customer,
+                    estate.getEstateName(),
+                    dividendAmount,
+                    tokenAmount,
+                    LocalDateTime.now()
+            );
         }
 
         log.info("배당금 지급 완료 - estateId: {}, 대상 계좌 수: {}", estateId, accounts.size());
