@@ -158,7 +158,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
             // 환불 처리
             customer.setAccountBalance(customer.getAccountBalance() + refundAmount);
 
-            notificationService.sendSellRefundNotification(
+            notificationService.sendSellPaymentNotification(
                     customer,
                     estate.getEstateName(),
                     refundAmount,
@@ -170,7 +170,7 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
             accountRepository.delete(account);
         }
 
-        log.info("매각 환불 및 상태 처리 완료");
+        log.info("매각 대금 지급 및 상태 처리 완료");
     }
 
 

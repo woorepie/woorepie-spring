@@ -56,7 +56,7 @@ public interface NotificationService {
     );
 
     // 매각 알림
-    void sendSellRefundNotification(
+    void sendSellPaymentNotification(
             Customer customer,
             String estateName,
             long refundAmount,

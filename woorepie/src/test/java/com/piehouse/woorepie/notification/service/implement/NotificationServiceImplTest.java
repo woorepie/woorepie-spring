@@ -193,7 +193,7 @@ class NotificationServiceImplTest {
      */
     @Test
     @DisplayName("매각 환불 알림")
-    void sendSellRefundNotification_success() {
+    void sendSellPaymentNotification_success() {
         Customer customer = mock(Customer.class);
         when(customer.getCustomerName()).thenReturn("홍길동");
 
@@ -201,7 +201,7 @@ class NotificationServiceImplTest {
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
 
         assertThatNoException().isThrownBy(() ->
-                notificationService.sendSellRefundNotification(customer, "부동산1", 3000, 3, LocalDateTime.now())
+                notificationService.sendSellPaymentNotification(customer, "부동산1", 3000, 3, LocalDateTime.now())
         );
         verify(notificationRepository).save(any(Notification.class));
     }
