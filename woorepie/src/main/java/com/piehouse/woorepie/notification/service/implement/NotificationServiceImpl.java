@@ -233,6 +233,10 @@ public class NotificationServiceImpl implements NotificationService {
         );
 
         log.info("[배당금 지급 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[배당금 지급 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
 }
