@@ -7,6 +7,7 @@ import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.SmsService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmsServiceImpl implements SmsService {
@@ -65,6 +67,8 @@ public class SmsServiceImpl implements SmsService {
     @Override
     public void sendSms(String toNumber, String content) {
         try {
+            log.info("SMS from number: {}", fromNumber);
+            log.info("SMS to number: {}", toNumber);
             Message message = new Message();
             message.setFrom(fromNumber);
             message.setTo(toNumber);
