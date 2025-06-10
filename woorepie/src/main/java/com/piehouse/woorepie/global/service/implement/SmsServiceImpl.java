@@ -7,6 +7,7 @@ import com.piehouse.woorepie.global.exception.ErrorCode;
 import com.piehouse.woorepie.global.service.SmsService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmsServiceImpl implements SmsService {
@@ -54,18 +56,19 @@ public class SmsServiceImpl implements SmsService {
             redisSmsCode(smsCodeRequest.getPhoneNumber(), code);
 
             // 문자 전송
-            sendSms(smsCodeRequest.getPhoneNumber(), code);
+            String content = "[woorepie]\n 인증번호는 "+code+" 입니다.";
+            sendSms(smsCodeRequest.getPhoneNumber(), content);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
     }
 
-    // 인증 번호 문자 전송
+    //문자 전송
     @Override
-    public void sendSms(String toNumber, String code) {
-
-        String content = "[woorepie]\n 인증번호는 "+code+" 입니다.";
+    public void sendSms(String toNumber, String content) {
         try {
+            log.info("SMS from number: {}", fromNumber);
+            log.info("SMS to number: {}", toNumber);
             Message message = new Message();
             message.setFrom(fromNumber);
             message.setTo(toNumber);
