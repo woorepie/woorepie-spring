@@ -54,17 +54,16 @@ public class SmsServiceImpl implements SmsService {
             redisSmsCode(smsCodeRequest.getPhoneNumber(), code);
 
             // 문자 전송
-            sendSms(smsCodeRequest.getPhoneNumber(), code);
+            String content = "[woorepie]\n 인증번호는 "+code+" 입니다.";
+            sendSms(smsCodeRequest.getPhoneNumber(), content);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
     }
 
-    // 인증 번호 문자 전송
+    //문자 전송
     @Override
-    public void sendSms(String toNumber, String code) {
-
-        String content = "[woorepie]\n 인증번호는 "+code+" 입니다.";
+    public void sendSms(String toNumber, String content) {
         try {
             Message message = new Message();
             message.setFrom(fromNumber);
