@@ -2,6 +2,7 @@ package com.piehouse.woorepie.notification.service.implement;
 
 import com.piehouse.woorepie.customer.entity.Customer;
 import com.piehouse.woorepie.global.exception.CustomException;
+import com.piehouse.woorepie.global.service.SmsService;
 import com.piehouse.woorepie.global.util.NotificationContentUtils;
 import com.piehouse.woorepie.notification.dto.response.NotificationResponse;
 import com.piehouse.woorepie.notification.entity.Notification;
@@ -21,7 +22,9 @@ import static com.piehouse.woorepie.global.exception.ErrorCode.NOTIFICATION_NON_
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
+
     private final NotificationRepository notificationRepository;
+    private final SmsService smsService;
 
     // 읽지 않은 알림 조회
     @Transactional(readOnly = true)
@@ -84,6 +87,10 @@ public class NotificationServiceImpl implements NotificationService {
         );
 
         log.info("[알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[매도/매수 문자 전송 완료]", customer.getCustomerPhoneNumber());
+
     }
 
     // 청약 성공 알림
@@ -100,7 +107,7 @@ public class NotificationServiceImpl implements NotificationService {
                 NotificationContentUtils.createSubscriptionSuccessNotification(
                         customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
-        Notification notification = notificationRepository.save(
+        notificationRepository.save(
                 Notification.builder()
                         .customer(customer)
                         .title(message.title)
@@ -108,6 +115,10 @@ public class NotificationServiceImpl implements NotificationService {
                         .isRead(false)
                         .build()
         );
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[청약 성공 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
     // 청약 실패(모집 미달) 알림
@@ -124,7 +135,7 @@ public class NotificationServiceImpl implements NotificationService {
                 NotificationContentUtils.createSubscriptionFailLackNotification(
                         customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
-        Notification notification = notificationRepository.save(
+        notificationRepository.save(
                 Notification.builder()
                         .customer(customer)
                         .title(message.title)
@@ -132,6 +143,10 @@ public class NotificationServiceImpl implements NotificationService {
                         .isRead(false)
                         .build()
         );
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[청약 실패(미달) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
     // 청약 실패(선착순 마감) 알림
@@ -148,7 +163,7 @@ public class NotificationServiceImpl implements NotificationService {
                 NotificationContentUtils.createSubscriptionFailSoldoutNotification(
                         customer.getCustomerName(), estateName, price*tokenAmount, tokenAmount, tradeTime);
 
-        Notification notification = notificationRepository.save(
+        notificationRepository.save(
                 Notification.builder()
                         .customer(customer)
                         .title(message.title)
@@ -156,6 +171,10 @@ public class NotificationServiceImpl implements NotificationService {
                         .isRead(false)
                         .build()
         );
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[청약 실패(마감) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
     // 매각 환불 알림
@@ -183,6 +202,10 @@ public class NotificationServiceImpl implements NotificationService {
         );
 
         log.info("[매각 환불 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[매각 환불 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
     // 배당금 지급 알림
@@ -210,6 +233,10 @@ public class NotificationServiceImpl implements NotificationService {
         );
 
         log.info("[배당금 지급 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
+
+//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+//        log.info("[배당금 지급 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+
     }
 
 }

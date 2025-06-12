@@ -20,7 +20,7 @@ public class OpenaiController {
 
     private final OpenaiService openAiService;
 
-    @PostMapping("/summarize")
+    @PostMapping("/ababsummarize")
     public ResponseEntity<ApiResponse<String>> summarize(@RequestBody AnalyzeRequest request, HttpServletRequest httpRequest) {
         String result = openAiService.summarize(
                 request.getEstateName(),
@@ -31,7 +31,7 @@ public class OpenaiController {
         return ApiResponseUtil.success(result, httpRequest);
     }
 
-    @PostMapping("/findnews")
+    @PostMapping("/ababfindnews")
     public ResponseEntity<ApiResponse<String>> findNews(@RequestBody NewsRequest request, HttpServletRequest httpRequest) {
         String result = openAiService.findNews(request.getEstateName(), request.getAddress());
         return ApiResponseUtil.success(result, httpRequest);
