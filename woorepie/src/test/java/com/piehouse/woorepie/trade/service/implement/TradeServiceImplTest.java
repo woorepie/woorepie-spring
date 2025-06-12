@@ -87,8 +87,8 @@ class TradeServiceImplTest {
         when(trade.getEstate()).thenReturn(estate);
         when(trade.getSeller()).thenReturn(seller);
         when(trade.getBuyer()).thenReturn(buyer);
-        when(trade.getTokenPrice()).thenReturn(1000);
-        when(trade.getTradeTokenAmount()).thenReturn(5);
+        when(trade.getTokenPrice()).thenReturn(1000L);
+        when(trade.getTradeTokenAmount()).thenReturn(5L);
         when(trade.getTradeId()).thenReturn(999L);
         when(trade.getTradeDate()).thenReturn(LocalDateTime.now());
 
@@ -97,14 +97,14 @@ class TradeServiceImplTest {
         when(customerRepository.findById(2L)).thenReturn(Optional.of(buyer));
         when(accountRepository.findByCustomerAndEstate(eq(seller), eq(estate))).thenReturn(Optional.of(sellerAccount));
         when(accountRepository.findByCustomerAndEstate(eq(buyer), eq(estate))).thenReturn(Optional.of(buyerAccount));
-        when(buyerAccount.getAccountTokenAmount()).thenReturn(0);
-        when(buyerAccount.getTotalAccountAmount()).thenReturn(0);
-        when(sellerAccount.getAccountTokenAmount()).thenReturn(10);
-        when(sellerAccount.getTotalAccountAmount()).thenReturn(10000);
-        when(sellerAccount.updateTokenAmount(anyInt())).thenReturn(sellerAccount);
-        when(sellerAccount.updateTotalAmount(anyInt())).thenReturn(sellerAccount);
-        when(buyerAccount.updateTokenAmount(anyInt())).thenReturn(buyerAccount);
-        when(buyerAccount.updateTotalAmount(anyInt())).thenReturn(buyerAccount);
+        when(buyerAccount.getAccountTokenAmount()).thenReturn(0L);
+        when(buyerAccount.getTotalAccountAmount()).thenReturn(0L);
+        when(sellerAccount.getAccountTokenAmount()).thenReturn(10L);
+        when(sellerAccount.getTotalAccountAmount()).thenReturn(10000L);
+        when(sellerAccount.updateTokenAmount(anyLong())).thenReturn(sellerAccount);
+        when(sellerAccount.updateTotalAmount(anyLong())).thenReturn(sellerAccount);
+        when(buyerAccount.updateTokenAmount(anyLong())).thenReturn(buyerAccount);
+        when(buyerAccount.updateTotalAmount(anyLong())).thenReturn(buyerAccount);
 
         // when
         Trade result = tradeService.saveTrade(estate, seller, buyer, 5, 1000);
@@ -113,7 +113,9 @@ class TradeServiceImplTest {
         assertThat(result).isNotNull();
         verify(tradeRepository).save(any());
         verify(kafkaProducerService).sendTransactionCreated(any(TransactionCreatedEvent.class));
-        verify(notificationService, times(2)).sendTradeNotification(any(), anyString(), anyInt(), anyInt(), any(), anyBoolean());
+        verify(notificationService, times(2)).sendTradeNotification(
+                any(), anyString(), anyLong(), anyLong(), any(), anyBoolean()
+        );
         verify(sellerAccount).updateTokenAmount(5);
         verify(sellerAccount).updateTotalAmount(5000);
         verify(buyerAccount).updateTokenAmount(5);
@@ -148,13 +150,13 @@ class TradeServiceImplTest {
     @DisplayName("buy - 매수 요청 성공 및 Kafka 발행")
     void buy_success() {
         BuyEstateRequest request = mock(BuyEstateRequest.class);
-        when(request.getTradeTokenAmount()).thenReturn(2);
-        when(request.getTokenPrice()).thenReturn(1000);
+        when(request.getTradeTokenAmount()).thenReturn(2L);
+        when(request.getTokenPrice()).thenReturn(1000L);
         when(request.getEstateId()).thenReturn(10L);
 
         Customer customer = mock(Customer.class);
         when(customerRepository.findById(3L)).thenReturn(Optional.of(customer));
-        when(customer.getAccountBalance()).thenReturn(10000);
+        when(customer.getAccountBalance()).thenReturn(10000L);
 
         when(redisOrderRepository.getCustomerBuyOrders(3L)).thenReturn(List.of());
 
@@ -170,13 +172,13 @@ class TradeServiceImplTest {
     @DisplayName("buy - 잔액 부족 예외")
     void buy_insufficientCash_fail() {
         BuyEstateRequest request = mock(BuyEstateRequest.class);
-        when(request.getTradeTokenAmount()).thenReturn(10);
-        when(request.getTokenPrice()).thenReturn(2000);
+        when(request.getTradeTokenAmount()).thenReturn(10L);
+        when(request.getTokenPrice()).thenReturn(2000L);
         when(request.getEstateId()).thenReturn(10L);
 
         Customer customer = mock(Customer.class);
         when(customerRepository.findById(3L)).thenReturn(Optional.of(customer));
-        when(customer.getAccountBalance()).thenReturn(1000);
+        when(customer.getAccountBalance()).thenReturn(1000L);
         when(redisOrderRepository.getCustomerBuyOrders(3L)).thenReturn(List.of());
 
         assertThatThrownBy(() -> tradeService.buy(request, 3L))
@@ -192,11 +194,11 @@ class TradeServiceImplTest {
     void sell_success() {
         SellEstateRequest request = mock(SellEstateRequest.class);
         when(request.getEstateId()).thenReturn(10L);
-        when(request.getTradeTokenAmount()).thenReturn(3);
-        when(request.getTokenPrice()).thenReturn(800);
+        when(request.getTradeTokenAmount()).thenReturn(3L);
+        when(request.getTokenPrice()).thenReturn(800L);
 
         Account account = mock(Account.class);
-        when(account.getAccountTokenAmount()).thenReturn(10);
+        when(account.getAccountTokenAmount()).thenReturn(10L);
 
         when(accountRepository.findByCustomer_CustomerIdAndEstate_EstateId(3L, 10L)).thenReturn(Optional.of(account));
         when(redisOrderRepository.getEstateSellOrders(10L)).thenReturn(List.of());
@@ -214,7 +216,7 @@ class TradeServiceImplTest {
     void sell_tokenNotExist_fail() {
         SellEstateRequest request = mock(SellEstateRequest.class);
         when(request.getEstateId()).thenReturn(10L);
-        when(request.getTradeTokenAmount()).thenReturn(5);
+        when(request.getTradeTokenAmount()).thenReturn(5L);
         when(accountRepository.findByCustomer_CustomerIdAndEstate_EstateId(3L, 10L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> tradeService.sell(request, 3L))
@@ -230,10 +232,10 @@ class TradeServiceImplTest {
     void createSubscription_success() {
         CreateSubscriptionTradeRequest request = mock(CreateSubscriptionTradeRequest.class);
         when(request.getEstateId()).thenReturn(15L);
-        when(request.getSubAmount()).thenReturn(3);
+        when(request.getSubAmount()).thenReturn(3L);
 
         Customer customer = mock(Customer.class);
-        when(customer.getAccountBalance()).thenReturn(10000);
+        when(customer.getAccountBalance()).thenReturn(10000L);
         when(customerRepository.findById(99L)).thenReturn(Optional.of(customer));
 
         Estate estate = mock(Estate.class);
@@ -242,7 +244,7 @@ class TradeServiceImplTest {
         when(estate.getSubEndDate()).thenReturn(LocalDateTime.now().plusDays(1));
 
         RedisEstatePrice price = mock(RedisEstatePrice.class);
-        when(price.getEstateTokenPrice()).thenReturn(2000);
+        when(price.getEstateTokenPrice()).thenReturn(2000L);
         when(estateRedisService.getRedisEstatePrice(15L)).thenReturn(price);
 
         when(redisOrderRepository.getCustomerBuyOrders(99L)).thenReturn(List.of());
@@ -260,10 +262,10 @@ class TradeServiceImplTest {
     void createSubscription_outOfPeriod_fail() {
         CreateSubscriptionTradeRequest request = mock(CreateSubscriptionTradeRequest.class);
         when(request.getEstateId()).thenReturn(100L);
-        when(request.getSubAmount()).thenReturn(2);
+        when(request.getSubAmount()).thenReturn(2L);
 
         Customer customer = mock(Customer.class);
-        when(customer.getAccountBalance()).thenReturn(10000);
+        when(customer.getAccountBalance()).thenReturn(10000L);
         when(customerRepository.findById(99L)).thenReturn(Optional.of(customer));
 
         Estate estate = mock(Estate.class);
@@ -287,8 +289,10 @@ class TradeServiceImplTest {
         when(estate.getEstateStatus()).thenReturn(EstateStatus.RUNNING);
 
         Customer customer = mock(Customer.class);
+        when(customer.getAccountBalance()).thenReturn(10000L); // 잔액 충분히
         when(customerRepository.findById(11L)).thenReturn(Optional.of(customer));
-        when(customerRepository.decreaseBalance(eq(11L), anyInt())).thenReturn(1);
+        when(customerRepository.decreaseBalance(eq(11L), anyLong())).thenReturn(1); // 성공 시 1 반환
+        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(mock(Subscription.class)); // 저장도 mock
 
         assertThatNoException().isThrownBy(() ->
                 tradeService.processSubscriptionRequest(111L, 11L, 2, 1000)

@@ -56,9 +56,9 @@ class EstateServiceImplTest {
                 .thenReturn(List.of(estate));
 
         RedisEstatePrice redisPrice = RedisEstatePrice.builder()
-                .estateTokenPrice(100)
+                .estateTokenPrice(100L)
                 .dividendYield(BigDecimal.valueOf(5.5))
-                .tokenAmount(1000)
+                .tokenAmount(1000L)
                 .build();
 
         when(estateRedisServiceImpl.getMultipleRedisEstatePrice(List.of(1L)))
@@ -84,7 +84,7 @@ class EstateServiceImplTest {
                 .estateLatitude("37.5665")
                 .estateLongitude("126.978")
                 .estateImageUrl("image.jpg")
-                .tokenAmount(1000)
+                .tokenAmount(1000L)
                 .estateUseZone("상업지역")
                 .totalEstateArea(BigDecimal.valueOf(1000))
                 .tradedEstateArea(BigDecimal.valueOf(500))
@@ -99,9 +99,9 @@ class EstateServiceImplTest {
         when(estateRepository.findById(1L)).thenReturn(Optional.of(estate));
 
         RedisEstatePrice price = RedisEstatePrice.builder()
-                .estatePrice(1000000)
+                .estatePrice(1000000L)
                 .dividendYield(BigDecimal.valueOf(5.5))
-                .estateTokenPrice(100)
+                .estateTokenPrice(100L)
                 .build();
 
         when(estateRedisServiceImpl.getRedisEstatePrice(1L)).thenReturn(price);
@@ -123,7 +123,7 @@ class EstateServiceImplTest {
     @DisplayName("매물 시세 내역 조회 - 정상 동작")
     void getEstatePriceHistory_shouldReturnList() {
         EstatePrice price = EstatePrice.builder()
-                .estatePrice(10000)
+                .estatePrice(10000L)
                 .estatePriceDate(LocalDateTime.now())
                 .build();
 
