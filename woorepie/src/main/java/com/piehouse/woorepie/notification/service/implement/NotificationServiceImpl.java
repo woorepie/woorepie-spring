@@ -88,8 +88,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("[알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[매도/매수 문자 전송 완료]", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[매도/매수 문자 전송 완료]", customer.getCustomerPhoneNumber());
 
     }
 
@@ -116,8 +116,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .build()
         );
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[청약 성공 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[청약 성공 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
 
     }
 
@@ -144,8 +144,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .build()
         );
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[청약 실패(미달) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[청약 실패(미달) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
 
     }
 
@@ -172,8 +172,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .build()
         );
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[청약 실패(마감) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[청약 실패(마감) 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
 
     }
 
@@ -203,8 +203,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("[매각 환불 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[매각 환불 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[매각 환불 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
 
     }
 
@@ -234,8 +234,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("[배당금 지급 알림 저장 완료] 알림 ID: {}", notification.getNotificationId());
 
-//        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
-//        log.info("[배당금 지급 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
+        smsService.sendSms(customer.getCustomerPhoneNumber(), message.title + "\n" + message.content);
+        log.info("[배당금 지급 문자 전송 완료]: {}", customer.getCustomerPhoneNumber());
 
     }
 
