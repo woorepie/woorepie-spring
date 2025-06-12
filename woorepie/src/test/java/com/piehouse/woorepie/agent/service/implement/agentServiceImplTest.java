@@ -171,12 +171,12 @@ class AgentServiceImplTest {
                 .estateId(1L)
                 .estateName("빌딩A")
                 .estateStatus(EstateStatus.SUCCESS)
-                .tokenAmount(100)
+                .tokenAmount(100L)
                 .build();
 
         when(estateRepository.findByAgent_AgentId(agentId)).thenReturn(List.of(estate));
         RedisEstatePrice price = RedisEstatePrice.builder()
-                .estateTokenPrice(1000)
+                .estateTokenPrice(1000L)
                 .dividendYield(BigDecimal.TEN)
                 .build();
         when(estateRedisService.getMultipleRedisEstatePrice(any()))

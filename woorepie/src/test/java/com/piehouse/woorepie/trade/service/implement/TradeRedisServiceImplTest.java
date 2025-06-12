@@ -161,7 +161,7 @@ class TradeRedisServiceImplTest {
         when(redisRepository.popOldestSellOrderFromBoth(anyLong())).thenReturn(null);
 
         OrderCreatedEvent event = OrderCreatedEvent.builder()
-                .estateId(1L).customerId(2L).tradeTokenAmount(10).tokenPrice(1000).build();
+                .estateId(1L).customerId(2L).tradeTokenAmount(10L).tokenPrice(1000L).build();
 
         assertThatNoException().isThrownBy(() ->
                 tradeRedisService.matchNewBuyOrder(event)
@@ -186,7 +186,7 @@ class TradeRedisServiceImplTest {
         when(redisRepository.popOldestSellOrderFromBoth(anyLong())).thenReturn(null);
 
         OrderCreatedEvent event = OrderCreatedEvent.builder()
-                .estateId(1L).customerId(2L).tradeTokenAmount(10).tokenPrice(1000).build();
+                .estateId(1L).customerId(2L).tradeTokenAmount(10L).tokenPrice(1000L).build();
 
         assertThatNoException().isThrownBy(() ->
                 tradeRedisService.matchNewSellOrder(event)
